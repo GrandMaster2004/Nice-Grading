@@ -1,0 +1,13 @@
+{
+  "name": "nice-grading",
+  "version": "1.0.0",
+  "description": "NICE Grading - Premium Trading Card Grading Service",
+  "scripts": {
+    "dev": "cd backend && npm run dev",
+    "install-all": "cd backend && npm install && cd ../frontend && npm install",
+    "setup": "npm run install-all && echo 'Setup complete! Copy .env.example to .env in both directories'"
+  },
+  "keywords": ["grading", "cards", "saas", "stripe"],
+  "author": "",
+  "license": "MIT"
+}
