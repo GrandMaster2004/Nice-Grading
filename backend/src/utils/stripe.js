@@ -1,6 +1,14 @@
+import dotenv from "dotenv";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+dotenv.config();
+
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+if (!stripeSecretKey) {
+  throw new Error("STRIPE_SECRET_KEY is missing. Set it in backend/.env.");
+}
+
+const stripe = new Stripe(stripeSecretKey);
 
 export const createPaymentIntent = async (amount, customerId) => {
   const paymentIntent = await stripe.paymentIntents.create({

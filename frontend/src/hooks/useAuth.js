@@ -1,4 +1,11 @@
-import { useState, useEffect } from "react";
+import {
+  createContext,
+  createElement,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 import {
   apiCall,
   getToken,
@@ -8,7 +15,9 @@ import {
 } from "../utils/api.js";
 import { sessionStorageManager } from "../utils/cache.js";
 
-export const useAuth = () => {
+const AuthContext = createContext(null);
+
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -78,14 +87,29 @@ export const useAuth = () => {
   const isAuthenticated = !!user && !!getToken();
   const isAdmin = user?.role === "admin";
 
-  return {
-    user,
-    loading,
-    error,
-    register,
-    login,
-    logout,
-    isAuthenticated,
-    isAdmin,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      error,
+      register,
+      login,
+      logout,
+      isAuthenticated,
+      isAdmin,
+    }),
+    [user, loading, error, register, login, logout, isAuthenticated, isAdmin],
+  );
+
+  return createElement(AuthContext.Provider, { value }, children);
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
+  return context;
 };

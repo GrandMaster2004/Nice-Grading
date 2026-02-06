@@ -8,6 +8,7 @@ import {
 import { useAuth } from "./hooks/useAuth.js";
 import { getToken } from "./utils/api.js";
 import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
+import { LandingLayout } from "./layouts/LandingLayout.jsx";
 import { LandingPage } from "./pages/Landing.jsx";
 import { LoginPage, RegisterPage } from "./pages/Auth.jsx";
 import { DashboardPage } from "./pages/Dashboard.jsx";
@@ -32,9 +33,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route element={<LandingLayout user={user} onLogout={logout} />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
 
         <Route
           path="/dashboard"
