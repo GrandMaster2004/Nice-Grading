@@ -175,18 +175,20 @@ textarea {
 
 .torn-card:hover {
   transform: translateY(-6px) rotate(-0.5deg);
-  filter: drop-shadow(-8px -8px 24px rgba(255, 255, 255, 0.2))
-    drop-shadow(10px 10px 25px rgba(0, 0, 0, 0.7));
+  filter: drop-shadow(-6px -6px 16px rgba(255, 255, 255, 0.15))
+    drop-shadow(8px 8px 20px rgba(0, 0, 0, 0.6));
 }
 
 .torn-inner {
   border: 1px solid var(--color-accent);
-  background: #141414;
+  background: rgba(20, 20, 25, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 18px 18px 16px;
   min-height: 140px;
   box-shadow:
-    inset -4px -4px 12px rgba(0, 0, 0, 0.4),
-    inset 4px 4px 12px rgba(255, 255, 255, 0.06);
+    inset 0 1px 0 rgba(176, 255, 0, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.3);
   border-radius: 0.5rem;
 }
 
