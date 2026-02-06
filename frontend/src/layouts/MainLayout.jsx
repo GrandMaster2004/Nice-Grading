@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 export const Header = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const showAuth = Boolean(user);
+  const isAdmin = user?.role === "admin";
+
+  const handleUserClick = () => {
+    // Route admins to admin panel, customers to dashboard
+    navigate(isAdmin ? "/admin" : "/dashboard");
+  };
 
   return (
     <header className="ng-header">
@@ -48,7 +54,13 @@ export const Header = ({ user, onLogout }) => {
         <div className="ng-header__actions">
           {showAuth ? (
             <>
-              <span className="ng-header__user">{user.name}</span>
+              <button
+                className="ng-header__user"
+                type="button"
+                onClick={handleUserClick}
+              >
+                {user.name}
+              </button>
               <button
                 onClick={onLogout}
                 className="ng-header__action"

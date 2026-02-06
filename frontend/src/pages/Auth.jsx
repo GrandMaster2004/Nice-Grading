@@ -19,11 +19,17 @@ const AuthPage = ({ mode = "login" }) => {
     const data = Object.fromEntries(formData);
 
     try {
+      let user;
       if (isRegister) {
-        await register(data.name, data.email, data.password);
-        navigate("/dashboard");
+        user = await register(data.name, data.email, data.password);
       } else {
-        await login(data.email, data.password);
+        user = await login(data.email, data.password);
+      }
+
+      // Route based on user role
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else {
         navigate("/dashboard");
       }
     } catch (err) {

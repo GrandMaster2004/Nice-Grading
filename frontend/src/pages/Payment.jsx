@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button, Card } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
 import { usePayment } from "../hooks/usePayment.js";
@@ -8,7 +8,6 @@ import { sessionStorageManager } from "../utils/cache.js";
 
 export const PaymentPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [paymentMethod, setPaymentMethod] = useState("pay_now");
   const [submissionData, setSubmissionData] = useState(null);
   const [cardNumber, setCardNumber] = useState("");
@@ -44,11 +43,13 @@ export const PaymentPage = ({ user, onLogout }) => {
   const handlePayment = async () => {
     if (!submissionData) return;
 
+    const cardCount = submissionData.cardCount ?? submissionData.cards.length;
+
     try {
       // Create submission first
       const submission = await createSubmission({
         cards: submissionData.cards,
-        cardCount: submissionData.cards.length,
+        cardCount,
         serviceTier: submissionData.serviceTier,
       });
 
@@ -185,7 +186,9 @@ export const PaymentPage = ({ user, onLogout }) => {
                   </div>
                   <div>
                     <span>Cards:</span>
-                    <strong>{submissionData.cards.length}</strong>
+                    <strong>
+                      {submissionData.cardCount ?? submissionData.cards.length}
+                    </strong>
                   </div>
                   <div className="payment-summary__total">
                     <span>TOTAL:</span>

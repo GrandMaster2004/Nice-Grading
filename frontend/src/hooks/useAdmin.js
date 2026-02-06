@@ -10,6 +10,7 @@ export const useAdmin = () => {
     page: 1,
     pageSize: 50,
     total: 0,
+    totalPages: 0,
   });
 
   const fetchSubmissions = useCallback(
@@ -26,11 +27,17 @@ export const useAdmin = () => {
         const data = await apiCall(`/api/admin/submissions?${params}`);
 
         setSubmissions(data.submissions);
-        setPagination(data.pagination);
+        setPagination({
+          page: data.pagination.page,
+          pageSize: data.pagination.pageSize,
+          total: data.pagination.total,
+          totalPages: data.pagination.totalPages,
+        });
 
         return data;
       } catch (err) {
-        setError(err.message);
+        const errorMsg = err.message || "Failed to fetch submissions";
+        setError(errorMsg);
         throw err;
       } finally {
         setLoading(false);
@@ -39,36 +46,38 @@ export const useAdmin = () => {
     [],
   );
 
-  const updateSubmissionStatus = useCallback(
-    async (submissionId, status) => {
-      setLoading(true);
-      setError(null);
+  const updateSubmissionStatus = useCallback(async (submissionId, status) => {
+    try {
+      const data = await apiCall(
+        `/api/admin/submissions/${submissionId}/status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ status }),
+        },
+      );
 
-      try {
-        const data = await apiCall(
-          `/api/admin/submissions/${submissionId}/status`,
-          {
-            method: "PATCH",
-            body: JSON.stringify({ status }),
-          },
+      // Update the submission in the current list
+      setSubmissions((prev) => {
+        if (!prev) return prev;
+        return prev.map((sub) =>
+          sub._id === submissionId
+            ? {
+                ...sub,
+                submissionStatus: data.submission.submissionStatus,
+                paymentStatus: data.submission.paymentStatus,
+              }
+            : sub,
         );
+      });
 
-        // Invalidate submissions cache by refetching
-        await fetchSubmissions(pagination.page);
-
-        return data;
-      } catch (err) {
-        setError(err.message);
-        throw err;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fetchSubmissions, pagination.page],
-  );
+      return data;
+    } catch (err) {
+      const errorMsg = err.message || "Failed to update submission status";
+      throw new Error(errorMsg);
+    }
+  }, []);
 
   const fetchAnalytics = useCallback(async () => {
-    setLoading(true);
     setError(null);
 
     try {
@@ -76,10 +85,9 @@ export const useAdmin = () => {
       setAnalytics(data.analytics);
       return data;
     } catch (err) {
-      setError(err.message);
+      const errorMsg = err.message || "Failed to fetch analytics";
+      setError(errorMsg);
       throw err;
-    } finally {
-      setLoading(false);
     }
   }, []);
 

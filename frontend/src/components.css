@@ -8,19 +8,23 @@
   text-transform: uppercase;
   cursor: pointer;
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.2s ease;
   font-family: var(--font-base);
+  position: relative;
 }
 
 .ng-button:hover:not(:disabled) {
-  transform: translateY(-1px) scale(1.01);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.1),
+    8px 8px 18px rgba(0, 0, 0, 0.5),
+    var(--shadow-glow);
 }
 
 .ng-button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.99);
 }
 
 .ng-button:disabled {
@@ -31,31 +35,66 @@
 .ng-button--primary {
   background: var(--color-accent);
   color: #050505;
-  box-shadow: var(--shadow-glow);
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.15),
+    6px 6px 16px rgba(0, 0, 0, 0.4),
+    var(--shadow-glow);
 }
 
 .ng-button--primary:hover:not(:disabled) {
   background: var(--color-accent-strong);
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.2),
+    8px 8px 20px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(176, 255, 0, 0.4);
 }
 
 .ng-button--secondary {
   background: transparent;
-  border: 2px solid var(--color-accent);
+  border: 1px solid rgba(176, 255, 0, 0.3);
   color: var(--color-accent);
+  box-shadow: var(--shadow-inner);
 }
 
 .ng-button--secondary:hover:not(:disabled) {
-  background: rgba(176, 255, 0, 0.1);
+  background: rgba(176, 255, 0, 0.08);
+  border-color: rgba(176, 255, 0, 0.5);
+  box-shadow:
+    var(--shadow-inner),
+    inset 0 0 12px rgba(176, 255, 0, 0.1);
+}
+
+.ng-button--secondary:active:not(:disabled) {
+  background: rgba(176, 255, 0, 0.12);
+  box-shadow:
+    var(--shadow-inner),
+    inset 2px 2px 8px rgba(176, 255, 0, 0.15);
 }
 
 .ng-button--ghost {
   background: transparent;
   color: var(--color-accent);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ng-button--ghost:hover:not(:disabled) {
+  color: var(--color-accent-strong);
+  text-shadow: 0 0 12px rgba(176, 255, 0, 0.3);
 }
 
 .ng-button--danger {
   background: #ef4444;
   color: #fff;
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.1),
+    6px 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.ng-button--danger:hover:not(:disabled) {
+  background: #dc2626;
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.15),
+    8px 8px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* Forms */
@@ -74,7 +113,7 @@
 .ng-field__control {
   width: 100%;
   border-radius: 0.9rem;
-  border: 2px solid var(--color-border);
+  border: 1px solid rgba(176, 255, 0, 0.2);
   background: var(--color-dark-tertiary);
   padding: 0.85rem 1rem;
   color: var(--color-white);
@@ -82,16 +121,23 @@
     border-color 0.2s ease,
     box-shadow 0.2s ease,
     transform 0.2s ease;
+  box-shadow: var(--shadow-inner);
 }
 
 .ng-field__control:hover {
-  border-color: rgba(176, 255, 0, 0.7);
+  border-color: rgba(176, 255, 0, 0.4);
+  box-shadow:
+    var(--shadow-inner),
+    inset 0 0 8px rgba(176, 255, 0, 0.08);
 }
 
 .ng-field__control:focus-visible {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(176, 255, 0, 0.2);
+  box-shadow:
+    var(--shadow-inner),
+    0 0 0 2px rgba(176, 255, 0, 0.15),
+    inset 0 0 12px rgba(176, 255, 0, 0.1);
   transform: translateY(-1px);
 }
 
@@ -121,20 +167,23 @@
 /* Cards */
 .ng-card {
   background: var(--color-panel);
-  border: 2px solid var(--color-border);
+  border: 1px solid rgba(176, 255, 0, 0.15);
   border-radius: var(--radius-base);
   padding: 1.75rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-card), var(--shadow-inner);
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s ease;
+  position: relative;
 }
 
 .ng-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 26px 50px rgba(0, 0, 0, 0.5);
-  border-color: rgba(176, 255, 0, 0.7);
+  transform: translateY(-3px) translateZ(0);
+  box-shadow:
+    -8px -8px 24px rgba(255, 255, 255, 0.12),
+    12px 12px 28px rgba(0, 0, 0, 0.7);
+  border-color: rgba(176, 255, 0, 0.4);
 }
 
 .ng-card h2 {
@@ -146,20 +195,23 @@
 .ng-skeleton {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .ng-skeleton__line {
-  height: 0.85rem;
+  height: 1rem;
   border-radius: 999px;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.2),
-    rgba(255, 255, 255, 0.05)
+    rgba(176, 255, 0, 0.05),
+    rgba(176, 255, 0, 0.12),
+    rgba(176, 255, 0, 0.05)
   );
   background-size: 200% 100%;
-  animation: shimmer 1.2s linear infinite;
+  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-shadow:
+    inset -2px -2px 6px rgba(0, 0, 0, 0.2),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.04);
 }
 
 /* Toast */
@@ -167,23 +219,52 @@
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  padding: 0.85rem 1.25rem;
-  border-radius: 0.85rem;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   color: #fff;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(8px);
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.1),
+    8px 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .ng-toast--success {
-  background: #16a34a;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.1),
+    8px 8px 20px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(22, 163, 74, 0.2);
 }
 .ng-toast--error {
-  background: #dc2626;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.1),
+    8px 8px 20px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(220, 38, 38, 0.2);
 }
 .ng-toast--info {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.1),
+    8px 8px 20px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(37, 99, 235, 0.2);
 }
 
 .ng-toast__close {
