@@ -79,6 +79,10 @@ export const confirmPayment = asyncHandler(async (req, res) => {
     status: "succeeded",
   });
 
+  // CRITICAL TRANSITION: Mark as paid + submitted
+  // This makes the submission visible in ALL SUBMISSIONS
+  // paymentStatus='paid' is the PRIMARY gate
+  // submissionStatus='submitted' is the SECONDARY filter
   submission.paymentStatus = "paid";
   submission.submissionStatus = "submitted";
   submission.cards = (submission.cards || []).map((card) =>

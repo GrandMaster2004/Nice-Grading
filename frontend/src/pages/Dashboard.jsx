@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, LoadingSkeleton } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
@@ -132,15 +132,47 @@ const SubmissionRow = ({ submission }) => {
 
 export const DashboardPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
-  const { submissions, loading, fetchVaultSubmissions } = useSubmissions();
+  const { submissions, loading, fetchVaultSubmissions, fetchPaidSubmissions } =
+    useSubmissions();
+  const [paidSubmissions, setPaidSubmissions] = useState(null);
+  const [loadingPaid, setLoadingPaid] = useState(true);
+  const [paidError, setPaidError] = useState(null);
 
+  // Fetch both vault and paid submissions on component mount
   useEffect(() => {
-    fetchVaultSubmissions();
-  }, [fetchVaultSubmissions]);
+    const loadVaultData = async () => {
+      try {
+        // Fetch unpaid submissions for Your Vault
+        await fetchVaultSubmissions();
+      } catch (err) {
+        console.error("Failed to fetch vault submissions:", err);
+      }
+
+      // Fetch paid submissions for All Submissions
+      setLoadingPaid(true);
+      setPaidError(null);
+      try {
+        const paid = await fetchPaidSubmissions();
+        setPaidSubmissions(paid || []);
+      } catch (err) {
+        console.error("Failed to fetch paid submissions:", err);
+        setPaidError(err.message);
+        setPaidSubmissions([]);
+      } finally {
+        setLoadingPaid(false);
+      }
+    };
+
+    loadVaultData();
+  }, []); // Only run once on mount
 
   const memoizedSubmissions = useMemo(() => {
     return submissions || [];
   }, [submissions]);
+
+  const memoizedPaidSubmissions = useMemo(() => {
+    return paidSubmissions || [];
+  }, [paidSubmissions]);
 
   const submissionSummary = useMemo(() => {
     const totalSubmissions = memoizedSubmissions.length;
@@ -290,14 +322,20 @@ export const DashboardPage = ({ user, onLogout }) => {
                           </tr>
                         </thead>
                         <tbody>
-                          {memoizedSubmissions.length === 0 ? (
+                          {loadingPaid ? (
                             <tr className="ng-table__row">
                               <td className="ng-table__cell" colSpan={5}>
-                                No submissions yet. Start by adding cards.
+                                Loading submissions...
+                              </td>
+                            </tr>
+                          ) : memoizedPaidSubmissions.length === 0 ? (
+                            <tr className="ng-table__row">
+                              <td className="ng-table__cell" colSpan={5}>
+                                No completed submissions yet.
                               </td>
                             </tr>
                           ) : (
-                            memoizedSubmissions.map((submission) => (
+                            memoizedPaidSubmissions.map((submission) => (
                               <SubmissionRow
                                 key={submission._id}
                                 submission={submission}

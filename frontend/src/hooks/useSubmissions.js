@@ -49,6 +49,18 @@ export const useSubmissions = () => {
     }
   }, []);
 
+  const fetchPaidSubmissions = useCallback(async () => {
+    // Don't use global loading state - caller manages its own loading state
+    // This prevents interference with fetchVaultSubmissions
+    try {
+      const data = await apiCall("/api/submissions/paid");
+      return data.submissions;
+    } catch (err) {
+      console.error("Error fetching paid submissions:", err);
+      throw err;
+    }
+  }, []);
+
   const createSubmission = useCallback(async (submission) => {
     setLoading(true);
     setError(null);
@@ -103,6 +115,7 @@ export const useSubmissions = () => {
     error,
     fetchSubmissions,
     fetchVaultSubmissions,
+    fetchPaidSubmissions,
     createSubmission,
     updateSubmission,
   };

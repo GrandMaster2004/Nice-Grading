@@ -4,6 +4,7 @@ import {
   createSubmission,
   getSubmissions,
   getVaultSubmissions,
+  getPaidSubmissions,
   getSubmissionById,
   updateSubmission,
 } from "../controllers/submissionController.js";
@@ -14,6 +15,7 @@ router.use(authMiddleware);
 
 router.post("/", createSubmission);
 router.get("/vault", getVaultSubmissions);
+router.get("/paid", getPaidSubmissions);
 router.get("/", getSubmissions);
 router.get("/:id", getSubmissionById);
 router.put("/:id", updateSubmission);

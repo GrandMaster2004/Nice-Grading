@@ -80,12 +80,32 @@ export const AdminPage = ({ user, onLogout }) => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
   const [updateError, setUpdateError] = useState(null);
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  // Fetch submissions and analytics on mount and when filters change
+  // Fetch submissions and analytics on mount ONLY (not on filter change)
   useEffect(() => {
-    fetchSubmissions(1, statusFilter);
-    fetchAnalytics();
-  }, [statusFilter, fetchSubmissions, fetchAnalytics]);
+    const loadInitialData = async () => {
+      try {
+        await fetchSubmissions(1, null);
+        await fetchAnalytics();
+      } catch (err) {
+        console.error("Failed to load admin data:", err);
+      } finally {
+        setInitialLoad(false);
+      }
+    };
+
+    if (initialLoad) {
+      loadInitialData();
+    }
+  }, []);
+
+  // Fetch with filter changes (after initial load)
+  useEffect(() => {
+    if (!initialLoad) {
+      fetchSubmissions(1, statusFilter);
+    }
+  }, [statusFilter, initialLoad, fetchSubmissions]);
 
   const memoizedSubmissions = useMemo(() => {
     return submissions || [];
@@ -174,7 +194,10 @@ export const AdminPage = ({ user, onLogout }) => {
                   options={[
                     { value: "", label: "All Status" },
                     { value: "submitted", label: "Submitted" },
+                    { value: "in_review", label: "In Review" },
+                    { value: "grading", label: "Grading" },
                     { value: "completed", label: "Completed" },
+                    { value: "shipped", label: "Shipped" },
                   ]}
                   value={statusFilter || ""}
                   onChange={(e) => setStatusFilter(e.target.value || null)}

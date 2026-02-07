@@ -10,14 +10,22 @@ export const getAllSubmissions = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const status = req.query.status;
 
-  // ALL SUBMISSIONS: Show ONLY paid + finalized submissions
-  // paymentStatus must be 'paid' AND submissionStatus must be in ('submitted', 'completed')
+  // PRIMARY GATE: paymentStatus must be 'paid'
+  // SECONDARY FILTER: submissionStatus must be in allowed finalized statuses
+  const allowedStatuses = [
+    "submitted",
+    "in_review",
+    "grading",
+    "completed",
+    "shipped",
+  ];
   const filter = {
     paymentStatus: "paid",
-    submissionStatus: { $in: ["submitted", "completed"] },
+    submissionStatus: { $in: allowedStatuses },
   };
 
-  if (status && ["submitted", "completed"].includes(status)) {
+  // Additional filtering only if admin specifies a status
+  if (status && allowedStatuses.includes(status)) {
     filter.submissionStatus = status;
   }
 
@@ -60,9 +68,9 @@ export const updateSubmissionStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  // Only allow submitted and completed statuses for ALL SUBMISSIONS visibility
-  const validStatuses = [
-    "draft",
+  // Admin can update submissionStatus only on paid submissions
+  // paymentStatus = 'paid' is the primary gate
+  const allowedStatuses = [
     "submitted",
     "in_review",
     "grading",
@@ -70,13 +78,20 @@ export const updateSubmissionStatus = asyncHandler(async (req, res) => {
     "shipped",
   ];
 
-  if (!validStatuses.includes(status)) {
+  if (!allowedStatuses.includes(status)) {
     return res.status(400).json({ error: "Invalid status" });
   }
 
   const submission = await Submission.findById(id);
   if (!submission) {
     return res.status(404).json({ error: "Submission not found" });
+  }
+
+  // CRITICAL: Ensure submission is paid before allowing status update
+  if (submission.paymentStatus !== "paid") {
+    return res.status(403).json({
+      error: "Cannot update status on unpaid submission",
+    });
   }
 
   submission.submissionStatus = status;

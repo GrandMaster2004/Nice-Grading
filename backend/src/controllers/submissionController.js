@@ -110,6 +110,28 @@ export const getSubmissions = asyncHandler(async (req, res) => {
   });
 });
 
+export const getPaidSubmissions = asyncHandler(async (req, res) => {
+  // PRIMARY GATE: paymentStatus = 'paid' is mandatory
+  // SECONDARY FILTER: submissionStatus must be in allowed finalized statuses
+  const allowedStatuses = [
+    "submitted",
+    "in_review",
+    "grading",
+    "completed",
+    "shipped",
+  ];
+  const submissions = await Submission.find({
+    userId: req.userId,
+    paymentStatus: "paid",
+    submissionStatus: { $in: allowedStatuses },
+  }).sort({ createdAt: -1 });
+
+  res.json({
+    success: true,
+    submissions,
+  });
+});
+
 export const getVaultSubmissions = asyncHandler(async (req, res) => {
   const submissions = await Submission.find({
     userId: req.userId,
