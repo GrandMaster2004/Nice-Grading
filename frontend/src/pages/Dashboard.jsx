@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, LoadingSkeleton } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
+import { LandingFooter } from "../components/LandingChrome.jsx";
 import { useSubmissions } from "../hooks/useSubmissions.js";
 
 const StatusBadge = ({ value, tone = "status" }) => {
@@ -324,6 +325,7 @@ export const DashboardPage = ({ user, onLogout }) => {
           </div>
         </div>
       </Container>
+      <LandingFooter />
     </div>
   );
 };

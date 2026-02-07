@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
+import { LandingFooter } from "../components/LandingChrome.jsx";
 
 export const ConfirmationPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ export const ConfirmationPage = ({ user, onLogout }) => {
           </div>
         </div>
       </Container>
+      <LandingFooter />
     </div>
   );
 };

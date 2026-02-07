@@ -7,7 +7,15 @@
     "install-all": "cd backend && npm install && cd ../frontend && npm install",
     "setup": "npm run install-all && echo 'Setup complete! Copy .env.example to .env in both directories'"
   },
-  "keywords": ["grading", "cards", "saas", "stripe"],
+  "keywords": [
+    "grading",
+    "cards",
+    "saas",
+    "stripe"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "nodemailer": "^8.0.0"
+  }
 }

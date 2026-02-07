@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Input, Card } from "../components/UI.jsx";
 import { sessionStorageManager } from "../utils/cache.js";
 import { Header, Container } from "../layouts/MainLayout.jsx";
+import { LandingFooter } from "../components/LandingChrome.jsx";
 
 export const AddCardsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -306,6 +307,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
           </div>
         </div>
       </Container>
+      <LandingFooter />
     </div>
   );
 };

@@ -127,6 +127,17 @@
   text-shadow: none;
 }
 
+.dashboard-page .landing__footer,
+.dashboard-page .landing__footer p,
+.dashboard-page .landing__footer span,
+.dashboard-page .landing__footer .landing__footer-logo,
+.admin-page .landing__footer,
+.admin-page .landing__footer p,
+.admin-page .landing__footer span,
+.admin-page .landing__footer .landing__footer-logo {
+  color: #ffffff;
+}
+
 .dashboard-page .dashboard-panel h2,
 .dashboard-page .ng-table th,
 .dashboard-page .ng-table__cell,
@@ -173,7 +184,7 @@
 
 /* Header */
 .ng-header {
-  background: rgba(15, 20, 32, 0.6);
+  background: #000000;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -196,12 +207,9 @@
   font-family: var(--font-display);
   font-size: clamp(1.4rem, 2.5vw, 2.2rem);
   letter-spacing: 0.04em;
-  color: var(--color-white);
+  color: #b0ff00;
   cursor: pointer;
-  text-shadow:
-    0 0 40px rgba(176, 255, 0, 0.5),
-    0 0 20px rgba(59, 130, 246, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.5);
+  text-shadow: none;
 }
 
 .ng-header__nav {
@@ -289,7 +297,7 @@
 
 .ng-footer {
   border-top: 1px solid rgba(176, 255, 0, 0.08);
-  background: rgba(15, 20, 32, 0.5);
+  background: #000000;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow:

@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
-import { Footer, Header } from "./MainLayout.jsx";
+import { Header } from "./MainLayout.jsx";
+import { LandingFooter } from "../components/LandingChrome.jsx";
 
 export const LandingLayout = ({ user, onLogout }) => {
   return (
@@ -8,7 +9,7 @@ export const LandingLayout = ({ user, onLogout }) => {
       <div className="landing__page-content">
         <Outlet />
       </div>
-      <Footer />
+      <LandingFooter />
     </div>
   );
 };

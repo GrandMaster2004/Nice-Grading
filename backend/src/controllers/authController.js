@@ -6,6 +6,7 @@ import {
 } from "../middleware/validation.js";
 import { generateToken, asyncHandler } from "../utils/helpers.js";
 import { createOrUpdateCustomer } from "../utils/stripe.js";
+import { sendPasswordResetEmail } from "../utils/mail.js";
 import crypto from "crypto";
 
 export const register = asyncHandler(async (req, res) => {
@@ -87,15 +88,24 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   user.resetPasswordExpires = new Date(Date.now() + 30 * 60 * 1000);
   await user.save();
 
-  // In production, send email with reset token
-  // For now, return the token (client should implement email verification)
+  // Send reset email
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&email=${email}`;
 
-  res.json({
-    success: true,
-    message: "Password reset link sent to email",
-    resetLink: process.env.NODE_ENV === "development" ? resetLink : undefined,
-  });
+  try {
+    await sendPasswordResetEmail(email, resetLink);
+    res.json({
+      success: true,
+      message: "Password reset link sent to your email",
+    });
+  } catch (error) {
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.status(500).json({
+      error: "Failed to send reset email. Please try again later.",
+    });
+  }
 });
 
 export const resetPassword = asyncHandler(async (req, res) => {

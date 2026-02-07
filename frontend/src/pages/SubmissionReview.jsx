@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
+import { LandingFooter } from "../components/LandingChrome.jsx";
 import { sessionStorageManager } from "../utils/cache.js";
 
 export const SubmissionReviewPage = ({ user, onLogout }) => {
@@ -43,6 +44,7 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
         <Container>
           <p className="ng-loading-screen__text">Loading...</p>
         </Container>
+        <LandingFooter />
       </div>
     );
   }
@@ -133,6 +135,7 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
           </div>
         </div>
       </Container>
+      <LandingFooter />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button, Card, Select, LoadingSkeleton } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
+import { LandingFooter } from "../components/LandingChrome.jsx";
 import { useAdmin } from "../hooks/useAdmin.js";
 
 const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
@@ -274,6 +275,7 @@ export const AdminPage = ({ user, onLogout }) => {
           </Card>
         </div>
       </Container>
+      <LandingFooter />
     </div>
   );
 };
