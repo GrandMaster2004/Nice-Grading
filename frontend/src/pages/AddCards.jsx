@@ -24,7 +24,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
     const cached = sessionStorageManager.getSubmissionForm();
     if (cached) {
       setCards(cached.cards || []);
-      setSelectedPrice(cached.selectedPrice ?? null);
+      // Don't restore selectedPrice - it's per-card, not global
     }
   }, []);
 
@@ -45,7 +45,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
     if (!selectedPrice) {
       setErrors((prev) => ({
         ...prev,
-        price: "Select a price before adding cards",
+        price: "Select a price before adding/updating this card",
       }));
       return;
     }
@@ -61,10 +61,16 @@ export const AddCardsPage = ({ user, onLogout }) => {
     const cardPayload = {
       ...cardForm,
       price: selectedPrice,
+      id: editingIndex !== null ? cards[editingIndex].id : Date.now(),
+      status: "unpaid",
+      createdAt:
+        editingIndex !== null
+          ? cards[editingIndex].createdAt
+          : new Date().toISOString(),
     };
 
     if (editingIndex !== null) {
-      // Update existing card
+      // Update existing card - only this card's price changes
       setCards((prev) => {
         const updated = [...prev];
         updated[editingIndex] = cardPayload;
@@ -72,10 +78,11 @@ export const AddCardsPage = ({ user, onLogout }) => {
       });
       setEditingIndex(null);
     } else {
-      // Add new card
+      // Add new card with selected price
       setCards((prev) => [...prev, cardPayload]);
     }
 
+    // Reset form but keep selectedPrice for convenience
     setCardForm({
       player: "",
       year: "",
@@ -87,7 +94,13 @@ export const AddCardsPage = ({ user, onLogout }) => {
 
   const handleEditCard = (index) => {
     const card = cards[index];
-    setCardForm(card);
+    setCardForm({
+      player: card.player,
+      year: card.year,
+      set: card.set,
+      cardNumber: card.cardNumber,
+      notes: card.notes || "",
+    });
     setSelectedPrice(card.price);
     setEditingIndex(index);
     setErrors({});
@@ -104,18 +117,23 @@ export const AddCardsPage = ({ user, onLogout }) => {
       cardNumber: "",
       notes: "",
     });
+    setSelectedPrice(null);
     setErrors({});
   };
 
+  const handleDeleteCard = (index) => {
+    setCards((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const canContinue = useMemo(() => {
-    return cards.length > 0 && Boolean(selectedPrice);
-  }, [cards.length, selectedPrice]);
+    return cards.length > 0;
+  }, [cards.length]);
 
   const handleContinue = () => {
     if (!canContinue) {
       setErrors((prev) => ({
         ...prev,
-        submit: cards.length === 0 ? "Add at least one card" : "Select a price",
+        submit: "Add at least one card before continuing",
       }));
       return;
     }
@@ -124,7 +142,6 @@ export const AddCardsPage = ({ user, onLogout }) => {
       cards,
       cardCount: cards.length,
       serviceTier,
-      selectedPrice,
     });
 
     navigate("/submission-review", {
@@ -132,7 +149,6 @@ export const AddCardsPage = ({ user, onLogout }) => {
         cards,
         serviceTier,
         cardCount: cards.length,
-        selectedPrice,
       },
     });
   };
@@ -142,7 +158,6 @@ export const AddCardsPage = ({ user, onLogout }) => {
       cards,
       cardCount: cards.length,
       serviceTier,
-      selectedPrice,
     });
     navigate("/dashboard");
   };
@@ -150,12 +165,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
   const handlePriceSelect = (price) => {
     setSelectedPrice(price);
     setErrors((prev) => ({ ...prev, price: undefined, submit: undefined }));
-    setCards((prev) =>
-      prev.map((card) => ({
-        ...card,
-        price,
-      })),
-    );
+    // Do NOT update existing cards - price applies only to current card being added/edited
   };
 
   return (

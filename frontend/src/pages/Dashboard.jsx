@@ -240,6 +240,9 @@ export const DashboardPage = ({ user, onLogout }) => {
           cards.push({
             cardNumber: card.cardNumber,
             player: card.player,
+            year: card.year,
+            set: card.set,
+            notes: card.notes,
             price: card.price || 0,
           });
         });
@@ -346,21 +349,14 @@ export const DashboardPage = ({ user, onLogout }) => {
                     >
                       <thead>
                         <tr>
-                          <th style={{ padding: "0.5rem" }}>CARD #</th>
                           <th style={{ padding: "0.5rem" }}>PLAYER</th>
+                          <th style={{ padding: "0.5rem" }}>YEAR</th>
                           <th style={{ padding: "0.5rem" }}>PRICE</th>
-                          <th style={{ padding: "0.5rem" }}>STATUS</th>
                         </tr>
                       </thead>
                       <tbody>
                         {unpaidCards.map((card, index) => (
                           <tr key={index} className="ng-table__row">
-                            <td
-                              className="ng-table__cell"
-                              style={{ padding: "0.5rem" }}
-                            >
-                              {card.cardNumber}
-                            </td>
                             <td
                               className="ng-table__cell"
                               style={{ padding: "0.5rem" }}
@@ -371,13 +367,13 @@ export const DashboardPage = ({ user, onLogout }) => {
                               className="ng-table__cell"
                               style={{ padding: "0.5rem" }}
                             >
-                              ${card.price}
+                              {card.year}
                             </td>
                             <td
                               className="ng-table__cell"
                               style={{ padding: "0.5rem" }}
                             >
-                              Unpaid
+                              ${card.price}
                             </td>
                           </tr>
                         ))}

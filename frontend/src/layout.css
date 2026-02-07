@@ -2024,6 +2024,14 @@
   color: #555555;
 }
 
+.review-details__item .review-details__price {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e40af;
+}
+
 .review-details__item small {
   display: block;
   margin-top: 0.45rem;
@@ -2362,6 +2370,32 @@
 .payment-summary__rows strong {
   color: #111111;
   font-weight: 700;
+}
+
+.payment-summary__breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(17, 17, 17, 0.03);
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.payment-summary__card {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #555555;
+}
+
+.payment-summary__card span:first-child {
+  color: #111111;
+}
+
+.payment-summary__card span:last-child {
+  font-weight: 600;
+  color: #1e40af;
 }
 
 .payment-summary__total {

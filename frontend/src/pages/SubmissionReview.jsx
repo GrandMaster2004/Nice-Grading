@@ -84,7 +84,7 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
                   {pricing && (
                     <div className="review-summary__pricing">
                       <p>PRICING CALCULATION:</p>
-                      <span>Price per card: ${formData.selectedPrice}</span>
+                      <span>Cards with individual prices</span>
                       <span>Subtotal: ${pricing.basePrice}</span>
                       <div className="review-summary__total">
                         FINAL ORDER TOTAL: ${pricing.total}
@@ -104,6 +104,9 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
                         <p>{card.player}</p>
                         <span>
                           {card.year} • {card.set} • #{card.cardNumber}
+                        </span>
+                        <span className="review-details__price">
+                          ${card.price}
                         </span>
                         {card.notes && <small>{card.notes}</small>}
                       </div>

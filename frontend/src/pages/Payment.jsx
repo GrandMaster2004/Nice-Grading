@@ -182,16 +182,25 @@ export const PaymentPage = ({ user, onLogout }) => {
                   <h2>ORDER SUMMARY</h2>
                   <div className="payment-summary__rows">
                     <div>
-                      <span>Price per card:</span>
-                      <strong>${submissionData.selectedPrice}</strong>
-                    </div>
-                    <div>
                       <span>Cards:</span>
                       <strong>
                         {submissionData.cardCount ??
                           submissionData.cards.length}
                       </strong>
                     </div>
+                    {submissionData.cards &&
+                      submissionData.cards.length > 0 && (
+                        <div className="payment-summary__breakdown">
+                          {submissionData.cards.map((card, i) => (
+                            <div key={i} className="payment-summary__card">
+                              <span>
+                                {card.player} ({card.year})
+                              </span>
+                              <span>${card.price}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     <div className="payment-summary__total">
                       <span>TOTAL:</span>
                       <strong>${calculateTotal().toFixed(2)}</strong>

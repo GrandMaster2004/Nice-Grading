@@ -14,7 +14,10 @@ const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
   const getPaymentClass = (status) =>
     `status-badge status-badge--${statusSlug(status)}`;
 
-  const pricePerCard = submission.cards?.[0]?.price || 0;
+  const totalPrice = (submission.cards || []).reduce(
+    (sum, card) => sum + (card.price || 0),
+    0,
+  );
   const cardDetails = (submission.cards || []).map((card) => (
     <div key={`${card.player}-${card.cardNumber}`}>
       {card.player} • {card.year} • {card.set} • #{card.cardNumber} ($
@@ -44,7 +47,7 @@ const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
       <td className="ng-table__cell">
         <div className="admin-card-details">{cardDetails}</div>
       </td>
-      <td className="ng-table__cell">${pricePerCard}</td>
+      <td className="ng-table__cell">${totalPrice.toFixed(2)}</td>
       <td className="ng-table__cell">
         <select
           value={submission.submissionStatus}
@@ -240,7 +243,7 @@ export const AdminPage = ({ user, onLogout }) => {
                         <th>DATE</th>
                         <th>CARDS</th>
                         <th>CARD DETAILS</th>
-                        <th>PRICE/CARD</th>
+                        <th>TOTAL PRICE</th>
                         <th>SUBMISSION STATUS</th>
                         <th>PAYMENT</th>
                         <th className="ng-table__cell--numeric">AMOUNT</th>
