@@ -9,22 +9,44 @@ const PAGE_SIZE = 50;
 export const getAllSubmissions = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const status = req.query.status;
-  const paymentStatus = req.query.paymentStatus;
 
-  const filter = {};
-  if (status) filter.submissionStatus = status;
-  if (paymentStatus) filter.paymentStatus = paymentStatus;
+  // ALL SUBMISSIONS: Show ONLY paid + finalized submissions
+  // paymentStatus must be 'paid' AND submissionStatus must be in ('submitted', 'completed')
+  const filter = {
+    paymentStatus: "paid",
+    submissionStatus: { $in: ["submitted", "completed"] },
+  };
+
+  if (status && ["submitted", "completed"].includes(status)) {
+    filter.submissionStatus = status;
+  }
 
   const total = await Submission.countDocuments(filter);
   const submissions = await Submission.find(filter)
+    .select(
+      "_id userId createdAt cardCount paymentStatus submissionStatus pricing",
+    )
     .populate("userId", "name email")
     .sort({ createdAt: -1 })
     .limit(PAGE_SIZE)
     .skip((page - 1) * PAGE_SIZE);
 
+  // Transform to return only submission-level data (no cards)
+  const submissionData = submissions.map((submission) => ({
+    _id: submission._id,
+    userId: submission.userId,
+    submissionId: submission._id,
+    submissionDate: submission.createdAt,
+    numberOfCards: submission.cardCount,
+    paymentStatus: submission.paymentStatus,
+    submissionStatus: submission.submissionStatus,
+    amount: submission.pricing.total,
+    createdAt: submission.createdAt,
+  }));
+
   res.json({
     success: true,
-    submissions,
+    submissions: submissionData,
     pagination: {
       page,
       pageSize: PAGE_SIZE,
@@ -38,14 +60,14 @@ export const updateSubmissionStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
+  // Only allow submitted and completed statuses for ALL SUBMISSIONS visibility
   const validStatuses = [
-    "Created",
-    "Awaiting Shipment",
-    "Received",
-    "In Grading",
-    "Ready for Payment",
-    "Shipped",
-    "Completed",
+    "draft",
+    "submitted",
+    "in_review",
+    "grading",
+    "completed",
+    "shipped",
   ];
 
   if (!validStatuses.includes(status)) {
@@ -55,58 +77,6 @@ export const updateSubmissionStatus = asyncHandler(async (req, res) => {
   const submission = await Submission.findById(id);
   if (!submission) {
     return res.status(404).json({ error: "Submission not found" });
-  }
-
-  // Auto-charge logic when status becomes 'Completed'
-  if (status === "Completed" && submission.paymentStatus === "unpaid") {
-    if (submission.stripePaymentMethodId) {
-      try {
-        const user = await User.findById(submission.userId);
-        if (!user) {
-          return res.status(404).json({ error: "User not found" });
-        }
-
-        const paymentIntent = await chargeCustomer(
-          user.stripeCustomerId,
-          submission.pricing.total,
-          submission.stripePaymentMethodId,
-        );
-
-        // Create payment record
-        const payment = new Payment({
-          submissionId: submission._id,
-          userId: submission.userId,
-          amount: submission.pricing.total,
-          currency: "usd",
-          paymentType: "pay_later",
-          stripePaymentIntentId: paymentIntent.id,
-          status: "succeeded",
-        });
-
-        submission.paymentStatus = "paid";
-        submission.submissionStatus = status;
-        submission.stripePaymentIntentId = paymentIntent.id;
-        submission.updatedAt = new Date();
-
-        await Promise.all([payment.save(), submission.save()]);
-
-        return res.json({
-          success: true,
-          message: "Status updated and payment charged",
-          submission,
-        });
-      } catch (error) {
-        console.error("[STRIPE CHARGE ERROR]", {
-          submissionId: submission._id,
-          error: error.message,
-        });
-
-        return res.status(400).json({
-          error: "Failed to charge payment method",
-          details: error.message,
-        });
-      }
-    }
   }
 
   submission.submissionStatus = status;
@@ -139,16 +109,11 @@ export const getSubmissionAnalytics = asyncHandler(async (req, res) => {
   ]);
 
   const completedSubmissions = await Submission.countDocuments({
-    submissionStatus: "Completed",
+    submissionStatus: "completed",
   });
 
   const inGradingCount = await Submission.countDocuments({
-    submissionStatus: "In Grading",
-  });
-
-  const pendingPaymentCount = await Submission.countDocuments({
-    paymentStatus: "unpaid",
-    submissionStatus: "Ready for Payment",
+    submissionStatus: "grading",
   });
 
   res.json({
@@ -158,7 +123,6 @@ export const getSubmissionAnalytics = asyncHandler(async (req, res) => {
       completedSubmissions,
       inGradingCount,
       paidSubmissions,
-      pendingPaymentCount,
       totalRevenue: totalRevenue[0]?.total || 0,
       unpaidRevenue: unpaidRevenueAgg[0]?.total || 0,
       paidRevenue: paidRevenueAgg[0]?.total || 0,

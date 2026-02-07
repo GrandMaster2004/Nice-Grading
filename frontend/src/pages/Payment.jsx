@@ -20,47 +20,117 @@ export const PaymentPage = ({ user, onLogout }) => {
     confirmPayment,
     loading: paymentLoading,
   } = usePayment();
-  const { createSubmission, loading: submissionLoading } = useSubmissions();
+  const {
+    fetchSubmissions,
+    createSubmission,
+    loading: submissionLoading,
+  } = useSubmissions();
 
   useEffect(() => {
-    const cached = sessionStorageManager.getSubmissionForm();
-    if (cached) {
-      setSubmissionData(cached);
-    }
-  }, []);
+    const loadUnpaidSubmission = async () => {
+      try {
+        const submissions = await fetchSubmissions(true);
+        const unpaidSubmission = submissions.find(
+          (sub) => sub.paymentStatus !== "paid",
+        );
+
+        if (unpaidSubmission && unpaidSubmission.cards) {
+          const unpaidCards = (unpaidSubmission.cards || []).filter(
+            (card) =>
+              (!card.status || card.status === "unpaid") && !card.isDeleted,
+          );
+
+          if (unpaidCards.length === 0) {
+            navigate("/dashboard");
+            return;
+          }
+
+          setSubmissionData({
+            ...unpaidSubmission,
+            cards: unpaidCards,
+            cardCount: unpaidCards.length,
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error loading unpaid submission:", error);
+      }
+
+      const cached = sessionStorageManager.getSubmissionForm();
+      if (cached) {
+        const unpaidCards = (cached.cards || []).filter(
+          (card) =>
+            (!card.status || card.status === "unpaid") && !card.isDeleted,
+        );
+
+        if (unpaidCards.length === 0) {
+          navigate("/dashboard");
+          return;
+        }
+
+        setSubmissionData({
+          ...cached,
+          cards: unpaidCards,
+          cardCount: unpaidCards.length,
+        });
+      }
+    };
+
+    loadUnpaidSubmission();
+  }, [fetchSubmissions, navigate]);
 
   const calculateTotal = () => {
     if (!submissionData) return 0;
-    return (submissionData.cards || []).reduce(
-      (sum, card) => sum + (card.price || 0),
-      0,
-    );
+    // Calculate only unpaid and non-deleted cards
+    return (submissionData.cards || [])
+      .filter(
+        (card) => (!card.status || card.status === "unpaid") && !card.isDeleted,
+      )
+      .reduce((sum, card) => sum + (card.price || 0), 0);
   };
 
   const handlePayment = async () => {
     if (!submissionData) return;
 
-    const cardCount = submissionData.cardCount ?? submissionData.cards.length;
+    // Filter only unpaid cards for payment
+    const unpaidCards = (submissionData.cards || []).filter(
+      (card) => !card.status || card.status === "unpaid",
+    );
+
+    if (unpaidCards.length === 0) {
+      navigate("/dashboard");
+      return;
+    }
 
     try {
-      // Create submission first
-      const submission = await createSubmission({
-        cards: submissionData.cards,
-        cardCount,
-        serviceTier: submissionData.serviceTier,
-      });
+      let submissionId = submissionData._id;
+      if (!submissionId) {
+        const submission = await createSubmission({
+          cards: unpaidCards,
+          cardCount: unpaidCards.length,
+          serviceTier: submissionData.serviceTier,
+        });
+        submissionId = submission._id;
+      }
 
       if (paymentMethod === "pay_now") {
-        // Simulate Pay Now - in production would use Stripe
-        await payNow(submission._id, "pm_card_visa");
+        const payNowResult = await payNow(submissionId, "pm_card_visa");
+        if (payNowResult?.paymentIntentId) {
+          await confirmPayment(submissionId, payNowResult.paymentIntentId);
+        }
       } else {
-        // Simulate Pay Later
-        await payLater(submission._id);
+        await payLater(submissionId);
       }
 
       // Clear cache and navigate to confirmation
       sessionStorageManager.removeSubmissionForm();
-      navigate("/confirmation", { state: { submissionId: submission._id } });
+
+      // Invalidate submissions cache to refresh unpaid cards
+      sessionStorageManager.remove(
+        sessionStorageManager.CACHE_KEYS.SUBMISSIONS,
+      );
+
+      navigate("/confirmation", { state: { submissionId } });
     } catch (error) {
       console.error("Payment error:", error);
     }

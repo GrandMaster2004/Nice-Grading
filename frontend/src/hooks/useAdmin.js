@@ -13,38 +13,35 @@ export const useAdmin = () => {
     totalPages: 0,
   });
 
-  const fetchSubmissions = useCallback(
-    async (page = 1, status = null, paymentStatus = null) => {
-      setLoading(true);
-      setError(null);
+  const fetchSubmissions = useCallback(async (page = 1, status = null) => {
+    setLoading(true);
+    setError(null);
 
-      try {
-        const params = new URLSearchParams();
-        params.append("page", page);
-        if (status) params.append("status", status);
-        if (paymentStatus) params.append("paymentStatus", paymentStatus);
+    try {
+      const params = new URLSearchParams();
+      params.append("page", page);
+      if (status) params.append("status", status);
+      // NOTE: paymentStatus is NOT included - backend enforces paid-only filter
 
-        const data = await apiCall(`/api/admin/submissions?${params}`);
+      const data = await apiCall(`/api/admin/submissions?${params}`);
 
-        setSubmissions(data.submissions);
-        setPagination({
-          page: data.pagination.page,
-          pageSize: data.pagination.pageSize,
-          total: data.pagination.total,
-          totalPages: data.pagination.totalPages,
-        });
+      setSubmissions(data.submissions);
+      setPagination({
+        page: data.pagination.page,
+        pageSize: data.pagination.pageSize,
+        total: data.pagination.total,
+        totalPages: data.pagination.totalPages,
+      });
 
-        return data;
-      } catch (err) {
-        const errorMsg = err.message || "Failed to fetch submissions";
-        setError(errorMsg);
-        throw err;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+      return data;
+    } catch (err) {
+      const errorMsg = err.message || "Failed to fetch submissions";
+      setError(errorMsg);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const updateSubmissionStatus = useCallback(async (submissionId, status) => {
     try {

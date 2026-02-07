@@ -4,6 +4,7 @@ import { Button, Input, Card } from "../components/UI.jsx";
 import { sessionStorageManager } from "../utils/cache.js";
 import { Header, Container } from "../layouts/MainLayout.jsx";
 import { LandingFooter } from "../components/LandingChrome.jsx";
+import { useSubmissions } from "../hooks/useSubmissions.js";
 
 export const AddCardsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -18,15 +19,100 @@ export const AddCardsPage = ({ user, onLogout }) => {
   });
   const [errors, setErrors] = useState({});
   const [editingIndex, setEditingIndex] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentSubmissionId, setCurrentSubmissionId] = useState(null);
   const serviceTier = "THE_STANDARD";
+  const { fetchSubmissions, createSubmission, updateSubmission } =
+    useSubmissions();
 
   useEffect(() => {
-    const cached = sessionStorageManager.getSubmissionForm();
-    if (cached) {
-      setCards(cached.cards || []);
-      // Don't restore selectedPrice - it's per-card, not global
+    const loadUnpaidCards = async () => {
+      try {
+        // Try to fetch from DB first
+        const submissions = await fetchSubmissions(true);
+
+        // Find the first unpaid submission
+        const unpaidSubmission = submissions.find(
+          (sub) => sub.paymentStatus !== "paid",
+        );
+
+        if (unpaidSubmission && unpaidSubmission.cards) {
+          // Store the submission ID for updates
+          setCurrentSubmissionId(unpaidSubmission._id);
+
+          const unpaidCards = unpaidSubmission.cards
+            .filter(
+              (card) =>
+                (!card.status || card.status === "unpaid") && !card.isDeleted,
+            )
+            .map((card) => ({
+              ...card,
+              id: card.id || Date.now() + Math.random(),
+              status: "unpaid",
+              createdAt: card.createdAt || new Date().toISOString(),
+            }));
+
+          setCards(unpaidCards);
+        } else {
+          // Fallback to sessionStorage if no unpaid submission
+          const cached = sessionStorageManager.getSubmissionForm();
+          if (cached && cached.cards) {
+            const cachedUnpaid = cached.cards.filter(
+              (card) =>
+                (!card.status || card.status === "unpaid") && !card.isDeleted,
+            );
+            setCards(cachedUnpaid);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading unpaid cards:", error);
+        // Fallback to sessionStorage on error
+        const cached = sessionStorageManager.getSubmissionForm();
+        if (cached && cached.cards) {
+          const cachedUnpaid = cached.cards.filter(
+            (card) =>
+              (!card.status || card.status === "unpaid") && !card.isDeleted,
+          );
+          setCards(cachedUnpaid);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUnpaidCards();
+  }, [fetchSubmissions]);
+
+  const getUnpaidCards = (submission) =>
+    (submission?.cards || []).filter(
+      (card) => (!card.status || card.status === "unpaid") && !card.isDeleted,
+    );
+
+  const syncCardsFromSubmission = (submission) => {
+    const unpaidCards = getUnpaidCards(submission);
+    setCards(unpaidCards);
+    sessionStorageManager.setSubmissionForm({
+      cards: unpaidCards,
+      cardCount: unpaidCards.length,
+      serviceTier,
+    });
+  };
+
+  const persistCards = async (cardsToSave, cardCountOverride) => {
+    const payload = {
+      cards: cardsToSave,
+      cardCount: cardCountOverride ?? cardsToSave.length,
+      serviceTier,
+    };
+
+    if (currentSubmissionId) {
+      return updateSubmission(currentSubmissionId, payload);
     }
-  }, []);
+
+    const created = await createSubmission(payload);
+    setCurrentSubmissionId(created._id);
+    return created;
+  };
 
   const handleFieldChange = (field, value) => {
     setCardForm((prev) => ({ ...prev, [field]: value }));
@@ -41,7 +127,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
     return newErrors;
   };
 
-  const handleAddOrUpdate = () => {
+  const handleAddOrUpdate = async () => {
     if (!selectedPrice) {
       setErrors((prev) => ({
         ...prev,
@@ -69,27 +155,35 @@ export const AddCardsPage = ({ user, onLogout }) => {
           : new Date().toISOString(),
     };
 
-    if (editingIndex !== null) {
-      // Update existing card - only this card's price changes
-      setCards((prev) => {
-        const updated = [...prev];
-        updated[editingIndex] = cardPayload;
-        return updated;
-      });
-      setEditingIndex(null);
-    } else {
-      // Add new card with selected price
-      setCards((prev) => [...prev, cardPayload]);
-    }
+    const nextCards =
+      editingIndex !== null
+        ? cards.map((card, index) =>
+            index === editingIndex ? cardPayload : card,
+          )
+        : [...cards, cardPayload];
 
-    // Reset form but keep selectedPrice for convenience
-    setCardForm({
-      player: "",
-      year: "",
-      set: "",
-      cardNumber: "",
-      notes: "",
-    });
+    try {
+      const savedSubmission = await persistCards(nextCards, nextCards.length);
+      if (savedSubmission?._id) {
+        setCurrentSubmissionId(savedSubmission._id);
+      }
+      syncCardsFromSubmission(savedSubmission || { cards: nextCards });
+      setEditingIndex(null);
+      // Reset form but keep selectedPrice for convenience
+      setCardForm({
+        player: "",
+        year: "",
+        set: "",
+        cardNumber: "",
+        notes: "",
+      });
+    } catch (error) {
+      console.error("Error saving card:", error);
+      setErrors((prev) => ({
+        ...prev,
+        submit: "Failed to save card. Please try again.",
+      }));
+    }
   };
 
   const handleEditCard = (index) => {
@@ -121,8 +215,21 @@ export const AddCardsPage = ({ user, onLogout }) => {
     setErrors({});
   };
 
-  const handleDeleteCard = (index) => {
-    setCards((prev) => prev.filter((_, i) => i !== index));
+  const handleDeleteCard = async (index) => {
+    const allCards = cards.map((card, i) =>
+      i === index ? { ...card, isDeleted: true } : card,
+    );
+    const visibleCards = allCards.filter((card) => !card.isDeleted);
+
+    try {
+      const savedSubmission = await persistCards(allCards, visibleCards.length);
+      if (savedSubmission?._id) {
+        setCurrentSubmissionId(savedSubmission._id);
+      }
+      syncCardsFromSubmission(savedSubmission || { cards: visibleCards });
+    } catch (error) {
+      console.error("Error deleting card:", error);
+    }
   };
 
   const canContinue = useMemo(() => {
@@ -153,13 +260,24 @@ export const AddCardsPage = ({ user, onLogout }) => {
     });
   };
 
-  const handleSaveAndExit = () => {
-    sessionStorageManager.setSubmissionForm({
-      cards,
-      cardCount: cards.length,
-      serviceTier,
-    });
-    navigate("/dashboard");
+  const handleSaveAndExit = async () => {
+    if (cards.length === 0) {
+      navigate("/dashboard");
+      return;
+    }
+
+    try {
+      const savedSubmission = await persistCards(cards, cards.length);
+      if (savedSubmission?._id) {
+        setCurrentSubmissionId(savedSubmission._id);
+      }
+      syncCardsFromSubmission(savedSubmission || { cards });
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error saving cards:", error);
+      // Still navigate even if save fails
+      navigate("/dashboard");
+    }
   };
 
   const handlePriceSelect = (price) => {
@@ -167,6 +285,20 @@ export const AddCardsPage = ({ user, onLogout }) => {
     setErrors((prev) => ({ ...prev, price: undefined, submit: undefined }));
     // Do NOT update existing cards - price applies only to current card being added/edited
   };
+
+  if (loading) {
+    return (
+      <div className="ng-app-shell ng-app-shell--dark add-cards-page">
+        <Header user={user} onLogout={onLogout} />
+        <Container>
+          <div className="ng-section">
+            <p className="ng-loading-screen__text">Loading cards...</p>
+          </div>
+        </Container>
+        <LandingFooter />
+      </div>
+    );
+  }
 
   return (
     <div className="ng-app-shell ng-app-shell--dark add-cards-page">

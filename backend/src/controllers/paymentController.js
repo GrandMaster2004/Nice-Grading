@@ -41,12 +41,14 @@ export const payNow = asyncHandler(async (req, res) => {
   );
 
   submission.stripePaymentIntentId = paymentIntent.id;
+  submission.updatedAt = new Date();
   await submission.save();
 
   res.json({
     success: true,
     clientSecret: paymentIntent.client_secret,
     submissionId: submission._id,
+    paymentIntentId: paymentIntent.id,
   });
 });
 
@@ -78,7 +80,10 @@ export const confirmPayment = asyncHandler(async (req, res) => {
   });
 
   submission.paymentStatus = "paid";
-  submission.submissionStatus = "Awaiting Shipment";
+  submission.submissionStatus = "submitted";
+  submission.cards = (submission.cards || []).map((card) =>
+    card.isDeleted ? card : { ...card, status: "paid" },
+  );
   submission.updatedAt = new Date();
 
   await Promise.all([payment.save(), submission.save()]);
@@ -146,7 +151,7 @@ export const confirmPaymentMethod = asyncHandler(async (req, res) => {
 
   submission.stripePaymentMethodId = paymentMethodId;
   submission.paymentStatus = "unpaid";
-  submission.submissionStatus = "Awaiting Shipment";
+  // Keep status as draft since payment hasn't been finalized yet
   submission.updatedAt = new Date();
 
   await submission.save();

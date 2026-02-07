@@ -14,17 +14,6 @@ const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
   const getPaymentClass = (status) =>
     `status-badge status-badge--${statusSlug(status)}`;
 
-  const totalPrice = (submission.cards || []).reduce(
-    (sum, card) => sum + (card.price || 0),
-    0,
-  );
-  const cardDetails = (submission.cards || []).map((card) => (
-    <div key={`${card.player}-${card.cardNumber}`}>
-      {card.player} • {card.year} • {card.set} • #{card.cardNumber} ($
-      {card.price})
-    </div>
-  ));
-
   return (
     <tr className="ng-table__row">
       <td className="ng-table__cell">
@@ -42,12 +31,8 @@ const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
         {new Date(submission.createdAt).toLocaleDateString()}
       </td>
       <td className="ng-table__cell ng-table__cell--strong">
-        {submission.cardCount}
+        {submission.numberOfCards}
       </td>
-      <td className="ng-table__cell">
-        <div className="admin-card-details">{cardDetails}</div>
-      </td>
-      <td className="ng-table__cell">${totalPrice.toFixed(2)}</td>
       <td className="ng-table__cell">
         <select
           value={submission.submissionStatus}
@@ -56,13 +41,11 @@ const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
           className="admin-status-select"
           title="Click to change submission status"
         >
-          <option>Created</option>
-          <option>Awaiting Shipment</option>
-          <option>Received</option>
-          <option>In Grading</option>
-          <option>Ready for Payment</option>
-          <option>Shipped</option>
-          <option>Completed</option>
+          <option value="submitted">Submitted</option>
+          <option value="in_review">In Review</option>
+          <option value="grading">Grading</option>
+          <option value="completed">Completed</option>
+          <option value="shipped">Shipped</option>
         </select>
         {isUpdating && <span className="admin-updating">Saving...</span>}
       </td>
@@ -76,7 +59,7 @@ const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
         </span>
       </td>
       <td className="ng-table__cell ng-table__cell--numeric">
-        ${submission.pricing.total.toFixed(2)}
+        ${submission.amount.toFixed(2)}
       </td>
     </tr>
   );
@@ -95,15 +78,14 @@ export const AdminPage = ({ user, onLogout }) => {
   } = useAdmin();
 
   const [statusFilter, setStatusFilter] = useState(null);
-  const [paymentFilter, setPaymentFilter] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
   const [updateError, setUpdateError] = useState(null);
 
   // Fetch submissions and analytics on mount and when filters change
   useEffect(() => {
-    fetchSubmissions(1, statusFilter, paymentFilter);
+    fetchSubmissions(1, statusFilter);
     fetchAnalytics();
-  }, [statusFilter, paymentFilter, fetchSubmissions, fetchAnalytics]);
+  }, [statusFilter, fetchSubmissions, fetchAnalytics]);
 
   const memoizedSubmissions = useMemo(() => {
     return submissions || [];
@@ -163,12 +145,6 @@ export const AdminPage = ({ user, onLogout }) => {
                 </p>
               </Card>
               <Card>
-                <p className="admin-analytics__label">Pending Payment</p>
-                <p className="admin-analytics__value">
-                  {analytics.pendingPaymentCount}
-                </p>
-              </Card>
-              <Card>
                 <p className="admin-analytics__label">Paid Revenue</p>
                 <p className="admin-analytics__value">
                   ${analytics.paidRevenue.toFixed(2)}
@@ -192,35 +168,16 @@ export const AdminPage = ({ user, onLogout }) => {
           {/* Main Submissions Table */}
           <Card className="admin-panel">
             <div className="admin-panel__header">
-              <h2>ALL SUBMISSIONS</h2>
+              <h2>ALL SUBMISSIONS - PAID & FINALIZED</h2>
               <div className="admin-filters">
                 <Select
                   options={[
                     { value: "", label: "All Status" },
-                    { value: "Created", label: "Created" },
-                    { value: "Awaiting Shipment", label: "Awaiting Shipment" },
-                    { value: "Received", label: "Received" },
-                    { value: "In Grading", label: "In Grading" },
-                    {
-                      value: "Ready for Payment",
-                      label: "Ready for Payment",
-                    },
-                    { value: "Shipped", label: "Shipped" },
-                    { value: "Completed", label: "Completed" },
+                    { value: "submitted", label: "Submitted" },
+                    { value: "completed", label: "Completed" },
                   ]}
                   value={statusFilter || ""}
                   onChange={(e) => setStatusFilter(e.target.value || null)}
-                  className="admin-filter"
-                />
-                <Select
-                  options={[
-                    { value: "", label: "All Payment" },
-                    { value: "paid", label: "Paid" },
-                    { value: "unpaid", label: "Unpaid" },
-                    { value: "failed", label: "Failed" },
-                  ]}
-                  value={paymentFilter || ""}
-                  onChange={(e) => setPaymentFilter(e.target.value || null)}
                   className="admin-filter"
                 />
               </div>
@@ -242,8 +199,6 @@ export const AdminPage = ({ user, onLogout }) => {
                         <th>ID</th>
                         <th>DATE</th>
                         <th>CARDS</th>
-                        <th>CARD DETAILS</th>
-                        <th>TOTAL PRICE</th>
                         <th>SUBMISSION STATUS</th>
                         <th>PAYMENT</th>
                         <th className="ng-table__cell--numeric">AMOUNT</th>
@@ -275,7 +230,6 @@ export const AdminPage = ({ user, onLogout }) => {
                         fetchSubmissions(
                           Math.max(1, pagination.page - 1),
                           statusFilter,
-                          paymentFilter,
                         )
                       }
                       disabled={pagination.page === 1}
@@ -286,11 +240,7 @@ export const AdminPage = ({ user, onLogout }) => {
                     <Button
                       variant="secondary"
                       onClick={() =>
-                        fetchSubmissions(
-                          pagination.page + 1,
-                          statusFilter,
-                          paymentFilter,
-                        )
+                        fetchSubmissions(pagination.page + 1, statusFilter)
                       }
                       disabled={pagination.page === pagination.totalPages}
                       className="admin-pagination__button"

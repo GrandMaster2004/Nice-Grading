@@ -2,9 +2,24 @@ import mongoose from "mongoose";
 
 const cardSchema = new mongoose.Schema(
   {
+    submissionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Submission",
+      default: null,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     player: {
       type: String,
       required: [true, "Player name is required"],
+      trim: true,
+    },
+    playerName: {
+      type: String,
+      default: "",
       trim: true,
     },
     year: {
@@ -15,6 +30,11 @@ const cardSchema = new mongoose.Schema(
     set: {
       type: String,
       required: [true, "Set is required"],
+      trim: true,
+    },
+    setName: {
+      type: String,
+      default: "",
       trim: true,
     },
     cardNumber: {
@@ -33,8 +53,21 @@ const cardSchema = new mongoose.Schema(
       trim: true,
       maxlength: [500, "Notes cannot exceed 500 characters"],
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["unpaid", "paid"],
+      default: "unpaid",
+    },
+    id: {
+      type: String,
+      default: null,
+    },
   },
-  { _id: false },
+  { _id: false, timestamps: true },
 );
 
 const submissionSchema = new mongoose.Schema({
@@ -78,15 +111,14 @@ const submissionSchema = new mongoose.Schema({
   submissionStatus: {
     type: String,
     enum: [
-      "Created",
-      "Awaiting Shipment",
-      "Received",
-      "In Grading",
-      "Ready for Payment",
-      "Shipped",
-      "Completed",
+      "draft",
+      "submitted",
+      "in_review",
+      "grading",
+      "completed",
+      "shipped",
     ],
-    default: "Created",
+    default: "draft",
     index: true,
   },
   stripePaymentIntentId: {

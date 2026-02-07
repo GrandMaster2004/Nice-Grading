@@ -97,19 +97,17 @@ const SubmissionRow = ({ submission }) => {
         ? "Failed"
         : "Pending";
 
-  const statusValue = submission.submissionStatus?.toLowerCase() || "";
-  const submissionStatus =
-    submission.submissionStatus === "Completed"
-      ? "Completed"
-      : statusValue.includes("grading") ||
-          statusValue.includes("review") ||
-          statusValue.includes("received") ||
-          statusValue.includes("ready") ||
-          statusValue.includes("shipped")
-        ? "In Review"
-        : statusValue
-          ? "Submitted"
-          : "Draft";
+  // Map new status values to display text
+  const statusMap = {
+    draft: "Draft",
+    submitted: "Submitted",
+    in_review: "In Review",
+    grading: "Grading",
+    completed: "Completed",
+    shipped: "Shipped",
+  };
+
+  const submissionStatus = statusMap[submission.submissionStatus] || "Unknown";
 
   return (
     <tr className="ng-table__row">
@@ -134,11 +132,11 @@ const SubmissionRow = ({ submission }) => {
 
 export const DashboardPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
-  const { submissions, loading, fetchSubmissions } = useSubmissions();
+  const { submissions, loading, fetchVaultSubmissions } = useSubmissions();
 
   useEffect(() => {
-    fetchSubmissions();
-  }, [fetchSubmissions]);
+    fetchVaultSubmissions();
+  }, [fetchVaultSubmissions]);
 
   const memoizedSubmissions = useMemo(() => {
     return submissions || [];
@@ -161,7 +159,7 @@ export const DashboardPage = ({ user, onLogout }) => {
       0,
     );
     const completedSubmissions = memoizedSubmissions.filter(
-      (submission) => submission.submissionStatus === "Completed",
+      (submission) => submission.submissionStatus === "completed",
     ).length;
     const pendingSubmissions = totalSubmissions - completedSubmissions;
     const unpaidAmount = memoizedSubmissions.reduce((sum, submission) => {
@@ -170,17 +168,18 @@ export const DashboardPage = ({ user, onLogout }) => {
       }
       return (
         sum +
-        (submission.cards || []).reduce(
-          (cardSum, card) => cardSum + (card.price || 0),
-          0,
-        )
+        (submission.cards || [])
+          .filter((card) => !card.isDeleted)
+          .reduce((cardSum, card) => cardSum + (card.price || 0), 0)
       );
     }, 0);
     const unpaidCards = memoizedSubmissions.reduce((sum, submission) => {
       if (submission.paymentStatus === "paid") {
         return sum;
       }
-      return sum + (submission.cards?.length || 0);
+      return (
+        sum + (submission.cards?.filter((card) => !card.isDeleted).length || 0)
+      );
     }, 0);
     const paymentStatus =
       totalSubmissions === 0
@@ -237,14 +236,17 @@ export const DashboardPage = ({ user, onLogout }) => {
     memoizedSubmissions.forEach((submission) => {
       if (submission.paymentStatus !== "paid" && submission.cards) {
         submission.cards.forEach((card) => {
-          cards.push({
-            cardNumber: card.cardNumber,
-            player: card.player,
-            year: card.year,
-            set: card.set,
-            notes: card.notes,
-            price: card.price || 0,
-          });
+          // Only include unpaid cards that are NOT deleted
+          if ((!card.status || card.status === "unpaid") && !card.isDeleted) {
+            cards.push({
+              cardNumber: card.cardNumber,
+              player: card.player,
+              year: card.year,
+              set: card.set,
+              notes: card.notes,
+              price: card.price || 0,
+            });
+          }
         });
       }
     });
@@ -327,6 +329,10 @@ export const DashboardPage = ({ user, onLogout }) => {
                   variant="secondary"
                   className="ng-button--block"
                   onClick={() => navigate("/payment")}
+                  disabled={
+                    unpaidCards.length === 0 ||
+                    submissionSummary.unpaidAmount <= 0
+                  }
                 >
                   PAYMENT OPTIONS
                 </Button>

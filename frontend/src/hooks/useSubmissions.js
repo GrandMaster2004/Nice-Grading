@@ -33,6 +33,22 @@ export const useSubmissions = () => {
     }
   }, []);
 
+  const fetchVaultSubmissions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await apiCall("/api/submissions/vault");
+      setSubmissions(data.submissions);
+      return data.submissions;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const createSubmission = useCallback(async (submission) => {
     setLoading(true);
     setError(null);
@@ -57,11 +73,37 @@ export const useSubmissions = () => {
     }
   }, []);
 
+  const updateSubmission = useCallback(async (submissionId, updates) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await apiCall(`/api/submissions/${submissionId}`, {
+        method: "PUT",
+        body: JSON.stringify(updates),
+      });
+
+      // Invalidate submissions cache
+      sessionStorageManager.remove(
+        sessionStorageManager.CACHE_KEYS.SUBMISSIONS,
+      );
+
+      return data.submission;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     submissions,
     loading,
     error,
     fetchSubmissions,
+    fetchVaultSubmissions,
     createSubmission,
+    updateSubmission,
   };
 };

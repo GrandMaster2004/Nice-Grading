@@ -25,7 +25,7 @@ export const validateSubmission = (data) => {
     cardNumber: Joi.string().required().max(50),
     price: Joi.number().valid(5, 10, 20).required(),
     notes: Joi.string().max(500).allow(""),
-  });
+  }).unknown(true);
 
   const schema = Joi.object({
     cards: Joi.array().items(cardSchema).required().min(1),
@@ -33,7 +33,7 @@ export const validateSubmission = (data) => {
       .valid("SPEED_DEMON", "THE_STANDARD", "BIG_MONEY")
       .required(),
     cardCount: Joi.number().required().min(1),
-  });
+  }).unknown(true);
 
   return schema.validate(data);
 };

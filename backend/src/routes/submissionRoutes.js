@@ -3,8 +3,9 @@ import { authMiddleware } from "../middleware/auth.js";
 import {
   createSubmission,
   getSubmissions,
+  getVaultSubmissions,
   getSubmissionById,
-  updateSubmissionStatus,
+  updateSubmission,
 } from "../controllers/submissionController.js";
 
 const router = express.Router();
@@ -12,8 +13,9 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.post("/", createSubmission);
+router.get("/vault", getVaultSubmissions);
 router.get("/", getSubmissions);
 router.get("/:id", getSubmissionById);
-router.patch("/:id/status", updateSubmissionStatus);
+router.put("/:id", updateSubmission);
 
 export default router;

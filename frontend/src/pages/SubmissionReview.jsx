@@ -4,28 +4,88 @@ import { Button, Card } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
 import { LandingFooter } from "../components/LandingChrome.jsx";
 import { sessionStorageManager } from "../utils/cache.js";
+import { useSubmissions } from "../hooks/useSubmissions.js";
 
 export const SubmissionReviewPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
   const [pricing, setPricing] = useState(null);
+  const { fetchSubmissions } = useSubmissions();
 
   useEffect(() => {
-    const cached = sessionStorageManager.getSubmissionForm();
-    if (cached) {
-      setFormData(cached);
-      const basePrice = (cached.cards || []).reduce(
-        (sum, card) => sum + (card.price || 0),
-        0,
-      );
-      const processingFee = 0;
-      setPricing({
-        basePrice,
-        processingFee,
-        total: basePrice + processingFee,
-      });
-    }
-  }, []);
+    const loadSubmission = async () => {
+      try {
+        const submissions = await fetchSubmissions(true);
+        const unpaidSubmission = submissions.find(
+          (sub) => sub.paymentStatus !== "paid",
+        );
+
+        if (unpaidSubmission && unpaidSubmission.cards) {
+          const unpaidCards = (unpaidSubmission.cards || []).filter(
+            (card) =>
+              (!card.status || card.status === "unpaid") && !card.isDeleted,
+          );
+
+          if (unpaidCards.length === 0) {
+            navigate("/dashboard");
+            return;
+          }
+
+          setFormData({
+            ...unpaidSubmission,
+            cards: unpaidCards,
+            cardCount: unpaidCards.length,
+          });
+
+          const basePrice = unpaidCards.reduce(
+            (sum, card) => sum + (card.price || 0),
+            0,
+          );
+          const processingFee = 0;
+          setPricing({
+            basePrice,
+            processingFee,
+            total: basePrice + processingFee,
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error loading submission review:", error);
+      }
+
+      const cached = sessionStorageManager.getSubmissionForm();
+      if (cached) {
+        const unpaidCards = (cached.cards || []).filter(
+          (card) =>
+            (!card.status || card.status === "unpaid") && !card.isDeleted,
+        );
+
+        if (unpaidCards.length === 0) {
+          navigate("/dashboard");
+          return;
+        }
+
+        setFormData({
+          ...cached,
+          cards: unpaidCards,
+          cardCount: unpaidCards.length,
+        });
+
+        const basePrice = unpaidCards.reduce(
+          (sum, card) => sum + (card.price || 0),
+          0,
+        );
+        const processingFee = 0;
+        setPricing({
+          basePrice,
+          processingFee,
+          total: basePrice + processingFee,
+        });
+      }
+    };
+
+    loadSubmission();
+  }, [fetchSubmissions, navigate]);
 
   const handleProceedToPayment = () => {
     navigate("/payment", { state: { formData, pricing } });
