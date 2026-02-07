@@ -308,8 +308,8 @@ export const DashboardPage = ({ user, onLogout }) => {
                           <tr>
                             <th>SUBMISSION ID</th>
                             <th>SUBMISSION DATE</th>
-                            <th>NUMBER OF CARDS</th>
-                            <th>PAYMENT STATUS</th>
+                            <th>NUM OF CARDS</th>
+                            <th>PAY STATUS</th>
                             <th>SUBMISSION STATUS</th>
                           </tr>
                         </thead>

@@ -39,8 +39,9 @@ export const Header = ({ user, onLogout }) => {
       }
     };
 
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("pointerdown", handleOutsideClick);
+    return () =>
+      document.removeEventListener("pointerdown", handleOutsideClick);
   }, [menuOpen]);
 
   return (

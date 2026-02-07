@@ -106,7 +106,9 @@ export const updateSubmissionStatus = asyncHandler(async (req, res) => {
 });
 
 export const getSubmissionAnalytics = asyncHandler(async (req, res) => {
-  const totalSubmissions = await Submission.countDocuments();
+  const totalSubmissions = await Submission.countDocuments({
+    paymentStatus: "paid",
+  });
   const paidSubmissions = await Submission.countDocuments({
     paymentStatus: "paid",
   });
@@ -118,9 +120,9 @@ export const getSubmissionAnalytics = asyncHandler(async (req, res) => {
     { $match: { paymentStatus: "paid" } },
     { $group: { _id: null, total: { $sum: "$pricing.total" } } },
   ]);
-  const totalRevenue = await Payment.aggregate([
-    { $match: { status: "succeeded" } },
-    { $group: { _id: null, total: { $sum: "$amount" } } },
+  const totalRevenueAgg = await Submission.aggregate([
+    { $match: { paymentStatus: "paid" } },
+    { $group: { _id: null, total: { $sum: "$pricing.total" } } },
   ]);
 
   const completedSubmissions = await Submission.countDocuments({
@@ -138,7 +140,7 @@ export const getSubmissionAnalytics = asyncHandler(async (req, res) => {
       completedSubmissions,
       inGradingCount,
       paidSubmissions,
-      totalRevenue: totalRevenue[0]?.total || 0,
+      totalRevenue: totalRevenueAgg[0]?.total || 0,
       unpaidRevenue: unpaidRevenueAgg[0]?.total || 0,
       paidRevenue: paidRevenueAgg[0]?.total || 0,
     },

@@ -170,12 +170,12 @@ export const AdminPage = ({ user, onLogout }) => {
                   ${analytics.paidRevenue.toFixed(2)}
                 </p>
               </Card>
-              <Card>
+              {/* <Card>
                 <p className="admin-analytics__label">Unpaid Revenue</p>
                 <p className="admin-analytics__value">
                   ${analytics.unpaidRevenue.toFixed(2)}
                 </p>
-              </Card>
+              </Card> */}
               <Card className="admin-analytics__highlight">
                 <p className="admin-analytics__label">Total Revenue</p>
                 <p className="admin-analytics__value">

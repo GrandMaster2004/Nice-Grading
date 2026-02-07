@@ -13,6 +13,17 @@
     background 0.2s ease;
   font-family: var(--font-base);
   position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .ng-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+  }
 }
 
 .ng-button:hover:not(:disabled) {
@@ -106,21 +117,47 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
+.ng-button--block {
+  width: 100%;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .ng-button--primary,
+  .ng-button--secondary,
+  .ng-button--danger,
+  .ng-button--ghost {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 /* Forms */
 .ng-field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .ng-field__label {
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   color: var(--color-accent);
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+  .ng-field__label {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+  }
 }
 
 .ng-field__control {
   width: 100%;
+  max-width: 100%;
   border-radius: 0.85rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(17, 24, 39, 0.4);
@@ -136,6 +173,14 @@
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .ng-field__control {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.9rem;
+  }
 }
 
 .ng-field__control:hover {
@@ -200,7 +245,24 @@
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.3s ease,
     backdrop-filter 0.3s ease;
-  position: relative;
+  /* position: relative; */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .ng-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .ng-card {
+    padding: 1.25rem;
+    border-radius: 0.85rem;
+  }
 }
 
 .ng-card:hover {
@@ -218,6 +280,15 @@
 .ng-card h2 {
   margin: 0 0 1rem;
   letter-spacing: 0.08em;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+@media (max-width: 640px) {
+  .ng-card h2 {
+    font-size: 0.9rem;
+    margin-bottom: 0.85rem;
+  }
 }
 
 /* Skeleton */
@@ -1036,7 +1107,9 @@
     flex-wrap: wrap;
     gap: 1.5rem;
   }
+}
 
+@media (max-width: 768px) {
   .landing__process-arrow {
     display: none;
   }
@@ -1124,6 +1197,18 @@
 .landing__statement p {
   color: #5a5a5a;
   max-width: 26rem;
+}
+
+@media (max-width: 768px) {
+  .landing__statement {
+    text-align: center;
+    padding: 0 1.25rem;
+  }
+
+  .landing__statement p {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .landing__gallery {
