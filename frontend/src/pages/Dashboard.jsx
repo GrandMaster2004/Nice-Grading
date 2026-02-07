@@ -181,6 +181,21 @@ export const DashboardPage = ({ user, onLogout }) => {
     };
   }, [memoizedSubmissions]);
 
+  const unpaidCards = useMemo(() => {
+    const cards = [];
+    memoizedSubmissions.forEach((submission) => {
+      if (submission.paymentStatus !== "paid" && submission.cards) {
+        submission.cards.forEach((card) => {
+          cards.push({
+            cardNumber: card.cardNumber,
+            player: card.player,
+          });
+        });
+      }
+    });
+    return cards;
+  }, [memoizedSubmissions]);
+
   return (
     <div className="ng-app-shell ng-app-shell--dark dashboard-page">
       <Header user={user} onLogout={onLogout} />
@@ -261,6 +276,50 @@ export const DashboardPage = ({ user, onLogout }) => {
                   PAYMENT OPTIONS
                 </Button>
               </Card>
+
+              {unpaidCards.length > 0 && (
+                <Card className="dashboard-action-panel">
+                  <h2>⚡ UNPAID CARDS</h2>
+                  <p
+                    className="dashboard-action-panel__copy"
+                    style={{ marginBottom: "1rem" }}
+                  >
+                    {unpaidCards.length} card{unpaidCards.length > 1 ? "s" : ""}{" "}
+                    awaiting payment
+                  </p>
+                  <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                    <table
+                      className="ng-table"
+                      style={{ fontSize: "0.875rem" }}
+                    >
+                      <thead>
+                        <tr>
+                          <th style={{ padding: "0.5rem" }}>CARD #</th>
+                          <th style={{ padding: "0.5rem" }}>PLAYER</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {unpaidCards.map((card, index) => (
+                          <tr key={index} className="ng-table__row">
+                            <td
+                              className="ng-table__cell"
+                              style={{ padding: "0.5rem" }}
+                            >
+                              {card.cardNumber}
+                            </td>
+                            <td
+                              className="ng-table__cell"
+                              style={{ padding: "0.5rem" }}
+                            >
+                              {card.player}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              )}
             </aside>
           </div>
         </div>
