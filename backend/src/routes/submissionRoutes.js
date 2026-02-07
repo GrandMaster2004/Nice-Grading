@@ -7,6 +7,7 @@ import {
   getPaidSubmissions,
   getSubmissionById,
   updateSubmission,
+  getDashboardMetrics,
 } from "../controllers/submissionController.js";
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.use(authMiddleware);
 router.post("/", createSubmission);
 router.get("/vault", getVaultSubmissions);
 router.get("/paid", getPaidSubmissions);
+router.get("/metrics", getDashboardMetrics);
 router.get("/", getSubmissions);
 router.get("/:id", getSubmissionById);
 router.put("/:id", updateSubmission);

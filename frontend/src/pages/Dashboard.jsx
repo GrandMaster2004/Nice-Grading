@@ -28,23 +28,11 @@ const DashboardSummary = ({ summary, paymentSummary }) => {
           </strong>
         </div>
         <div className="dashboard-summary__item">
-          <span className="dashboard-summary__label">TOTAL CARDS</span>
-          <strong className="dashboard-summary__value">
-            {summary.totalCards}
-          </strong>
-        </div>
-        <div className="dashboard-summary__item">
-          <span className="dashboard-summary__label">PENDING</span>
-          <strong className="dashboard-summary__value">
-            {summary.pendingSubmissions}
-          </strong>
-        </div>
-        <div className="dashboard-summary__item">
           <span className="dashboard-summary__label">COMPLETED</span>
           <strong className="dashboard-summary__value">
             {summary.completedSubmissions}
           </strong>
-        </div>{" "}
+        </div>
         <div className="dashboard-summary__item">
           <span className="dashboard-summary__label">UNPAID CARDS</span>
           <strong className="dashboard-summary__value">
@@ -56,7 +44,7 @@ const DashboardSummary = ({ summary, paymentSummary }) => {
           <strong className="dashboard-summary__value">
             ${summary.unpaidAmount.toFixed(2)}
           </strong>
-        </div>{" "}
+        </div>
       </div>
       <div className="dashboard-summary__payments">
         <div>
@@ -132,11 +120,18 @@ const SubmissionRow = ({ submission }) => {
 
 export const DashboardPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
-  const { submissions, loading, fetchVaultSubmissions, fetchPaidSubmissions } =
-    useSubmissions();
+  const {
+    submissions,
+    loading,
+    fetchVaultSubmissions,
+    fetchPaidSubmissions,
+    fetchDashboardMetrics,
+  } = useSubmissions();
   const [paidSubmissions, setPaidSubmissions] = useState(null);
   const [loadingPaid, setLoadingPaid] = useState(true);
   const [paidError, setPaidError] = useState(null);
+  const [dashboardMetrics, setDashboardMetrics] = useState(null);
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
 
   // Fetch both vault and paid submissions on component mount
   useEffect(() => {
@@ -161,6 +156,18 @@ export const DashboardPage = ({ user, onLogout }) => {
       } finally {
         setLoadingPaid(false);
       }
+
+      // Fetch dashboard metrics from backend
+      setLoadingMetrics(true);
+      try {
+        const metrics = await fetchDashboardMetrics();
+        setDashboardMetrics(metrics);
+      } catch (err) {
+        console.error("Failed to fetch dashboard metrics:", err);
+        setDashboardMetrics(null);
+      } finally {
+        setLoadingMetrics(false);
+      }
     };
 
     loadVaultData();
@@ -175,12 +182,21 @@ export const DashboardPage = ({ user, onLogout }) => {
   }, [paidSubmissions]);
 
   const submissionSummary = useMemo(() => {
-    const totalSubmissions = memoizedSubmissions.length;
-    const totalCards = memoizedSubmissions.reduce(
-      (sum, submission) =>
-        sum + (submission.cards?.length || submission.cardCount || 0),
-      0,
-    );
+    // Use backend-calculated metrics
+    if (!dashboardMetrics) {
+      return {
+        totalSubmissions: 0,
+        completedSubmissions: 0,
+        paymentStatus: "Unpaid",
+        unpaidCards: 0,
+        unpaidAmount: 0,
+      };
+    }
+
+    const { totalSubmissions, completedCards, unpaidCards, unpaidAmount } =
+      dashboardMetrics;
+
+    // Calculate total amount for payment status
     const totalAmount = memoizedSubmissions.reduce(
       (sum, submission) =>
         sum +
@@ -190,29 +206,7 @@ export const DashboardPage = ({ user, onLogout }) => {
         ),
       0,
     );
-    const completedSubmissions = memoizedSubmissions.filter(
-      (submission) => submission.submissionStatus === "completed",
-    ).length;
-    const pendingSubmissions = totalSubmissions - completedSubmissions;
-    const unpaidAmount = memoizedSubmissions.reduce((sum, submission) => {
-      if (submission.paymentStatus === "paid") {
-        return sum;
-      }
-      return (
-        sum +
-        (submission.cards || [])
-          .filter((card) => !card.isDeleted)
-          .reduce((cardSum, card) => cardSum + (card.price || 0), 0)
-      );
-    }, 0);
-    const unpaidCards = memoizedSubmissions.reduce((sum, submission) => {
-      if (submission.paymentStatus === "paid") {
-        return sum;
-      }
-      return (
-        sum + (submission.cards?.filter((card) => !card.isDeleted).length || 0)
-      );
-    }, 0);
+
     const paymentStatus =
       totalSubmissions === 0
         ? "Unpaid"
@@ -224,14 +218,12 @@ export const DashboardPage = ({ user, onLogout }) => {
 
     return {
       totalSubmissions,
-      totalCards,
-      pendingSubmissions,
-      completedSubmissions,
+      completedSubmissions: completedCards, // Backend provides completedCards count
       paymentStatus,
       unpaidCards,
       unpaidAmount,
     };
-  }, [memoizedSubmissions]);
+  }, [dashboardMetrics, memoizedSubmissions]);
 
   const paymentSummary = useMemo(() => {
     const total = memoizedSubmissions.reduce(

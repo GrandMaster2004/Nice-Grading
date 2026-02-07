@@ -254,3 +254,43 @@ export const updateSubmissionStatus = asyncHandler(async (req, res) => {
     submission,
   });
 });
+
+export const getDashboardMetrics = asyncHandler(async (req, res) => {
+  // Fetch all submissions for the user
+  const submissions = await Submission.find({ userId: req.userId });
+
+  // Calculate metrics
+  let totalSubmissions = 0;
+  let completedCards = 0;
+  let unpaidCards = 0;
+  let unpaidAmount = 0;
+
+  submissions.forEach((submission) => {
+    if (submission.cards && Array.isArray(submission.cards)) {
+      submission.cards.forEach((card) => {
+        if (!card.isDeleted) {
+          // Count all non-deleted cards for TOTAL SUBMISSIONS
+          totalSubmissions++;
+
+          // Count paid cards for COMPLETED
+          if (card.status === "paid") {
+            completedCards++;
+          }
+
+          // Count unpaid cards and amount for UNPAID metrics
+          if (card.status !== "paid") {
+            unpaidCards++;
+            unpaidAmount += card.price || 0;
+          }
+        }
+      });
+    }
+  });
+
+  res.json({
+    totalSubmissions,
+    completedCards,
+    unpaidCards,
+    unpaidAmount,
+  });
+});

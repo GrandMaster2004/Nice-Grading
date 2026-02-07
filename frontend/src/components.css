@@ -828,6 +828,35 @@
   }
 }
 
+@media (min-width: 641px) and (max-width: 1024px) {
+  .landing__tickets {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .ticket-card {
+    min-height: auto;
+  }
+
+  .ticket-card__inner {
+    padding: 2.25rem 1.25rem 2.5rem;
+  }
+
+  .landing__ticket-title,
+  .landing__ticket-price {
+    font-size: 2rem;
+  }
+
+  .landing__ticket-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
 .ticket-card {
   flex: 1;
   display: flex;
@@ -1002,6 +1031,35 @@
   justify-content: flex-start;
 }
 
+@media (max-width: 1024px) {
+  .landing__process-steps {
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .landing__process-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .landing__process-steps {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .landing__process-step {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .landing__process-badge {
+    width: 4.5rem;
+    height: 4.5rem;
+    font-size: 2rem;
+  }
+}
+
 .landing__process-step {
   display: flex;
   flex-direction: column;
@@ -1082,6 +1140,16 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.45rem;
+}
+
+@media (max-width: 640px) {
+  .landing__gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing__gallery-card {
+    height: 12rem;
+  }
 }
 
 .landing__gallery-card {

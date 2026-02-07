@@ -61,6 +61,17 @@ export const useSubmissions = () => {
     }
   }, []);
 
+  const fetchDashboardMetrics = useCallback(async () => {
+    // Fetch pre-calculated metrics from backend
+    try {
+      const data = await apiCall("/api/submissions/metrics");
+      return data;
+    } catch (err) {
+      console.error("Error fetching dashboard metrics:", err);
+      throw err;
+    }
+  }, []);
+
   const createSubmission = useCallback(async (submission) => {
     setLoading(true);
     setError(null);
@@ -116,6 +127,7 @@ export const useSubmissions = () => {
     fetchSubmissions,
     fetchVaultSubmissions,
     fetchPaidSubmissions,
+    fetchDashboardMetrics,
     createSubmission,
     updateSubmission,
   };

@@ -8,7 +8,7 @@ export const ConfirmationPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="ng-app-shell ng-app-shell--dark confirmation-page">
+    <div className="ng-app-shell admin-page confirmation-page">
       <Header user={user} onLogout={onLogout} />
       <Container>
         <div className="ng-section confirmation-content">
