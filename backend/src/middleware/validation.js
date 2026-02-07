@@ -23,6 +23,7 @@ export const validateSubmission = (data) => {
     year: Joi.string().required().max(50),
     set: Joi.string().required().max(100),
     cardNumber: Joi.string().required().max(50),
+    price: Joi.number().valid(5, 10, 20).required(),
     notes: Joi.string().max(500).allow(""),
   });
 

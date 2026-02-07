@@ -125,6 +125,14 @@ export const getSubmissionAnalytics = asyncHandler(async (req, res) => {
   const paidSubmissions = await Submission.countDocuments({
     paymentStatus: "paid",
   });
+  const unpaidRevenueAgg = await Submission.aggregate([
+    { $match: { paymentStatus: "unpaid" } },
+    { $group: { _id: null, total: { $sum: "$pricing.total" } } },
+  ]);
+  const paidRevenueAgg = await Submission.aggregate([
+    { $match: { paymentStatus: "paid" } },
+    { $group: { _id: null, total: { $sum: "$pricing.total" } } },
+  ]);
   const totalRevenue = await Payment.aggregate([
     { $match: { status: "succeeded" } },
     { $group: { _id: null, total: { $sum: "$amount" } } },
@@ -152,6 +160,8 @@ export const getSubmissionAnalytics = asyncHandler(async (req, res) => {
       paidSubmissions,
       pendingPaymentCount,
       totalRevenue: totalRevenue[0]?.total || 0,
+      unpaidRevenue: unpaidRevenueAgg[0]?.total || 0,
+      paidRevenue: paidRevenueAgg[0]?.total || 0,
     },
   });
 });

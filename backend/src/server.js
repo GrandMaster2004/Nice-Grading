@@ -28,19 +28,41 @@ app.use(
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: "Too many requests, please try again later",
+  handler: (req, res) => {
+    res
+      .status(429)
+      .json({ error: "Too many requests, please try again later" });
+  },
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
+  max: 10,
+  handler: (req, res) => {
+    res
+      .status(429)
+      .json({ error: "Too many login attempts, please try again later" });
+  },
+});
+
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
   max: 5,
-  message: "Too many login attempts, please try again later",
+  handler: (req, res) => {
+    res.status(429).json({
+      error: "Too many password reset requests, please try again later",
+    });
+  },
 });
 
 const paymentLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
-  message: "Too many payment requests, please try again later",
+  handler: (req, res) => {
+    res
+      .status(429)
+      .json({ error: "Too many payment requests, please try again later" });
+  },
 });
 
 app.use(limiter);

@@ -44,7 +44,19 @@ const DashboardSummary = ({ summary, paymentSummary }) => {
           <strong className="dashboard-summary__value">
             {summary.completedSubmissions}
           </strong>
+        </div>{" "}
+        <div className="dashboard-summary__item">
+          <span className="dashboard-summary__label">UNPAID CARDS</span>
+          <strong className="dashboard-summary__value">
+            {summary.unpaidCards}
+          </strong>
         </div>
+        <div className="dashboard-summary__item">
+          <span className="dashboard-summary__label">UNPAID AMOUNT</span>
+          <strong className="dashboard-summary__value">
+            ${summary.unpaidAmount.toFixed(2)}
+          </strong>
+        </div>{" "}
       </div>
       <div className="dashboard-summary__payments">
         <div>
@@ -135,22 +147,47 @@ export const DashboardPage = ({ user, onLogout }) => {
   const submissionSummary = useMemo(() => {
     const totalSubmissions = memoizedSubmissions.length;
     const totalCards = memoizedSubmissions.reduce(
-      (sum, submission) => sum + (submission.cardCount || 0),
+      (sum, submission) =>
+        sum + (submission.cards?.length || submission.cardCount || 0),
+      0,
+    );
+    const totalAmount = memoizedSubmissions.reduce(
+      (sum, submission) =>
+        sum +
+        (submission.cards || []).reduce(
+          (cardSum, card) => cardSum + (card.price || 0),
+          0,
+        ),
       0,
     );
     const completedSubmissions = memoizedSubmissions.filter(
       (submission) => submission.submissionStatus === "Completed",
     ).length;
     const pendingSubmissions = totalSubmissions - completedSubmissions;
-    const paidCount = memoizedSubmissions.filter(
-      (submission) => submission.paymentStatus === "paid",
-    ).length;
+    const unpaidAmount = memoizedSubmissions.reduce((sum, submission) => {
+      if (submission.paymentStatus === "paid") {
+        return sum;
+      }
+      return (
+        sum +
+        (submission.cards || []).reduce(
+          (cardSum, card) => cardSum + (card.price || 0),
+          0,
+        )
+      );
+    }, 0);
+    const unpaidCards = memoizedSubmissions.reduce((sum, submission) => {
+      if (submission.paymentStatus === "paid") {
+        return sum;
+      }
+      return sum + (submission.cards?.length || 0);
+    }, 0);
     const paymentStatus =
       totalSubmissions === 0
         ? "Unpaid"
-        : paidCount === totalSubmissions
+        : unpaidAmount === 0
           ? "Paid"
-          : paidCount === 0
+          : unpaidAmount === totalAmount
             ? "Unpaid"
             : "Partially Paid";
 
@@ -160,17 +197,30 @@ export const DashboardPage = ({ user, onLogout }) => {
       pendingSubmissions,
       completedSubmissions,
       paymentStatus,
+      unpaidCards,
+      unpaidAmount,
     };
   }, [memoizedSubmissions]);
 
   const paymentSummary = useMemo(() => {
     const total = memoizedSubmissions.reduce(
-      (sum, submission) => sum + (submission.pricing?.total || 0),
+      (sum, submission) =>
+        sum +
+        (submission.cards || []).reduce(
+          (cardSum, card) => cardSum + (card.price || 0),
+          0,
+        ),
       0,
     );
     const paid = memoizedSubmissions.reduce((sum, submission) => {
       if (submission.paymentStatus === "paid") {
-        return sum + (submission.pricing?.total || 0);
+        return (
+          sum +
+          (submission.cards || []).reduce(
+            (cardSum, card) => cardSum + (card.price || 0),
+            0,
+          )
+        );
       }
       return sum;
     }, 0);
@@ -190,6 +240,7 @@ export const DashboardPage = ({ user, onLogout }) => {
           cards.push({
             cardNumber: card.cardNumber,
             player: card.player,
+            price: card.price || 0,
           });
         });
       }
@@ -297,6 +348,8 @@ export const DashboardPage = ({ user, onLogout }) => {
                         <tr>
                           <th style={{ padding: "0.5rem" }}>CARD #</th>
                           <th style={{ padding: "0.5rem" }}>PLAYER</th>
+                          <th style={{ padding: "0.5rem" }}>PRICE</th>
+                          <th style={{ padding: "0.5rem" }}>STATUS</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -313,6 +366,18 @@ export const DashboardPage = ({ user, onLogout }) => {
                               style={{ padding: "0.5rem" }}
                             >
                               {card.player}
+                            </td>
+                            <td
+                              className="ng-table__cell"
+                              style={{ padding: "0.5rem" }}
+                            >
+                              ${card.price}
+                            </td>
+                            <td
+                              className="ng-table__cell"
+                              style={{ padding: "0.5rem" }}
+                            >
+                              Unpaid
                             </td>
                           </tr>
                         ))}

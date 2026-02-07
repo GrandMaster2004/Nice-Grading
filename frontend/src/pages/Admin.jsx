@@ -14,6 +14,14 @@ const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
   const getPaymentClass = (status) =>
     `status-badge status-badge--${statusSlug(status)}`;
 
+  const pricePerCard = submission.cards?.[0]?.price || 0;
+  const cardDetails = (submission.cards || []).map((card) => (
+    <div key={`${card.player}-${card.cardNumber}`}>
+      {card.player} • {card.year} • {card.set} • #{card.cardNumber} ($
+      {card.price})
+    </div>
+  ));
+
   return (
     <tr className="ng-table__row">
       <td className="ng-table__cell">
@@ -33,6 +41,10 @@ const SubmissionRow = ({ submission, onStatusChange, isUpdating }) => {
       <td className="ng-table__cell ng-table__cell--strong">
         {submission.cardCount}
       </td>
+      <td className="ng-table__cell">
+        <div className="admin-card-details">{cardDetails}</div>
+      </td>
+      <td className="ng-table__cell">${pricePerCard}</td>
       <td className="ng-table__cell">
         <select
           value={submission.submissionStatus}
@@ -153,10 +165,22 @@ export const AdminPage = ({ user, onLogout }) => {
                   {analytics.pendingPaymentCount}
                 </p>
               </Card>
+              <Card>
+                <p className="admin-analytics__label">Paid Revenue</p>
+                <p className="admin-analytics__value">
+                  ${analytics.paidRevenue.toFixed(2)}
+                </p>
+              </Card>
+              <Card>
+                <p className="admin-analytics__label">Unpaid Revenue</p>
+                <p className="admin-analytics__value">
+                  ${analytics.unpaidRevenue.toFixed(2)}
+                </p>
+              </Card>
               <Card className="admin-analytics__highlight">
                 <p className="admin-analytics__label">Total Revenue</p>
                 <p className="admin-analytics__value">
-                  ${(analytics.totalRevenue / 100).toFixed(0)}
+                  ${analytics.totalRevenue.toFixed(2)}
                 </p>
               </Card>
             </div>
@@ -215,6 +239,8 @@ export const AdminPage = ({ user, onLogout }) => {
                         <th>ID</th>
                         <th>DATE</th>
                         <th>CARDS</th>
+                        <th>CARD DETAILS</th>
+                        <th>PRICE/CARD</th>
                         <th>SUBMISSION STATUS</th>
                         <th>PAYMENT</th>
                         <th className="ng-table__cell--numeric">AMOUNT</th>

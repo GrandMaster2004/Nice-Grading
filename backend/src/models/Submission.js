@@ -22,6 +22,11 @@ const cardSchema = new mongoose.Schema(
       required: [true, "Card number is required"],
       trim: true,
     },
+    price: {
+      type: Number,
+      required: [true, "Price is required"],
+      min: [1, "Price must be greater than 0"],
+    },
     notes: {
       type: String,
       default: "",

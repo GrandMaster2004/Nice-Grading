@@ -7,9 +7,8 @@ import { LandingFooter } from "../components/LandingChrome.jsx";
 
 export const AddCardsPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
-  const [numberOnly, setNumberOnly] = useState(false);
-  const [totalCount, setTotalCount] = useState("");
   const [cards, setCards] = useState([]);
+  const [selectedPrice, setSelectedPrice] = useState(null);
   const [cardForm, setCardForm] = useState({
     player: "",
     year: "",
@@ -17,16 +16,15 @@ export const AddCardsPage = ({ user, onLogout }) => {
     cardNumber: "",
     notes: "",
   });
-  const [editIndex, setEditIndex] = useState(null);
   const [errors, setErrors] = useState({});
+  const [editingIndex, setEditingIndex] = useState(null);
   const serviceTier = "THE_STANDARD";
 
   useEffect(() => {
     const cached = sessionStorageManager.getSubmissionForm();
     if (cached) {
       setCards(cached.cards || []);
-      setNumberOnly(Boolean(cached.numberOnly));
-      setTotalCount(cached.cardCount ? String(cached.cardCount) : "");
+      setSelectedPrice(cached.selectedPrice ?? null);
     }
   }, []);
 
@@ -44,6 +42,14 @@ export const AddCardsPage = ({ user, onLogout }) => {
   };
 
   const handleAddOrUpdate = () => {
+    if (!selectedPrice) {
+      setErrors((prev) => ({
+        ...prev,
+        price: "Select a price before adding cards",
+      }));
+      return;
+    }
+
     const formErrors = validateCardForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
@@ -52,14 +58,22 @@ export const AddCardsPage = ({ user, onLogout }) => {
 
     setErrors({});
 
-    if (editIndex !== null) {
-      setCards((prev) =>
-        prev.map((card, index) =>
-          index === editIndex ? { ...cardForm } : card,
-        ),
-      );
+    const cardPayload = {
+      ...cardForm,
+      price: selectedPrice,
+    };
+
+    if (editingIndex !== null) {
+      // Update existing card
+      setCards((prev) => {
+        const updated = [...prev];
+        updated[editingIndex] = cardPayload;
+        return updated;
+      });
+      setEditingIndex(null);
     } else {
-      setCards((prev) => [...prev, { ...cardForm }]);
+      // Add new card
+      setCards((prev) => [...prev, cardPayload]);
     }
 
     setCardForm({
@@ -69,121 +83,91 @@ export const AddCardsPage = ({ user, onLogout }) => {
       cardNumber: "",
       notes: "",
     });
-    setEditIndex(null);
   };
 
   const handleEditCard = (index) => {
-    setCardForm(cards[index]);
-    setEditIndex(index);
+    const card = cards[index];
+    setCardForm(card);
+    setSelectedPrice(card.price);
+    setEditingIndex(index);
+    setErrors({});
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDeleteCard = (index) => {
-    setCards((prev) => prev.filter((_, i) => i !== index));
-    if (editIndex === index) {
-      setEditIndex(null);
-      setCardForm({
-        player: "",
-        year: "",
-        set: "",
-        cardNumber: "",
-        notes: "",
-      });
-    }
-  };
-
-  const handleToggleNumberOnly = () => {
-    setNumberOnly((prev) => {
-      const next = !prev;
-      if (next) {
-        setCards([]);
-        setCardForm({
-          player: "",
-          year: "",
-          set: "",
-          cardNumber: "",
-          notes: "",
-        });
-        setEditIndex(null);
-      }
-      setErrors({});
-      return next;
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setCardForm({
+      player: "",
+      year: "",
+      set: "",
+      cardNumber: "",
+      notes: "",
     });
+    setErrors({});
   };
 
   const canContinue = useMemo(() => {
-    if (numberOnly) {
-      return Number(totalCount) > 0;
-    }
-
-    return cards.length > 0;
-  }, [numberOnly, totalCount, cards.length]);
+    return cards.length > 0 && Boolean(selectedPrice);
+  }, [cards.length, selectedPrice]);
 
   const handleContinue = () => {
     if (!canContinue) {
       setErrors((prev) => ({
         ...prev,
-        submit: numberOnly
-          ? "Enter total number of cards"
-          : "Add at least one card",
+        submit: cards.length === 0 ? "Add at least one card" : "Select a price",
       }));
       return;
     }
 
     sessionStorageManager.setSubmissionForm({
-      cards: numberOnly ? [] : cards,
-      cardCount: numberOnly ? Number(totalCount) : cards.length,
+      cards,
+      cardCount: cards.length,
       serviceTier,
-      numberOnly,
+      selectedPrice,
     });
 
     navigate("/submission-review", {
       state: {
-        cards: numberOnly ? [] : cards,
+        cards,
         serviceTier,
-        cardCount: numberOnly ? Number(totalCount) : cards.length,
+        cardCount: cards.length,
+        selectedPrice,
       },
     });
   };
 
   const handleSaveAndExit = () => {
     sessionStorageManager.setSubmissionForm({
-      cards: numberOnly ? [] : cards,
-      cardCount: numberOnly ? Number(totalCount) : cards.length,
+      cards,
+      cardCount: cards.length,
       serviceTier,
-      numberOnly,
+      selectedPrice,
     });
     navigate("/dashboard");
   };
 
+  const handlePriceSelect = (price) => {
+    setSelectedPrice(price);
+    setErrors((prev) => ({ ...prev, price: undefined, submit: undefined }));
+    setCards((prev) =>
+      prev.map((card) => ({
+        ...card,
+        price,
+      })),
+    );
+  };
+
   return (
-    <div className="ng-app-shell ng-app-shell--dark">
+    <div className="ng-app-shell ng-app-shell--dark add-cards-page">
       <Header user={user} onLogout={onLogout} />
       <Container>
-        <div className="ng-section add-cards-page">
-          <h1 className="ng-page-title">ADD CARDS</h1>
-          <div className="add-cards__container">
-            <Card className="add-cards__panel">
-              <h2>ADD A CARD</h2>
-              <label className="add-cards__toggle">
-                <input
-                  type="checkbox"
-                  checked={numberOnly}
-                  onChange={handleToggleNumberOnly}
-                />
-                <span>Enter number of cards only</span>
-              </label>
-
-              {numberOnly ? (
-                <Input
-                  type="number"
-                  label="TOTAL NUMBER OF CARDS"
-                  placeholder="0"
-                  min="1"
-                  value={totalCount}
-                  onChange={(e) => setTotalCount(e.target.value)}
-                  error={errors.submit}
-                />
-              ) : (
+        <div className="ng-section">
+          <h1 className="ng-page-title add-cards-page__title">ADD CARDS</h1>
+          <div className="add-cards__container add-cards__container--split">
+            <div className="add-cards__left">
+              <Card className="add-cards__panel">
+                <h2>{editingIndex !== null ? "EDIT CARD" : "ADD A CARD"}</h2>
                 <div className="add-cards__form">
                   <Input
                     label="PLAYER"
@@ -223,71 +207,96 @@ export const AddCardsPage = ({ user, onLogout }) => {
                     value={cardForm.notes}
                     onChange={(e) => handleFieldChange("notes", e.target.value)}
                   />
-                  <Button
-                    variant="primary"
-                    className="ng-button--block"
-                    onClick={handleAddOrUpdate}
-                  >
-                    {editIndex !== null ? "UPDATE CARD" : "ADD CARD"}
-                  </Button>
+                  <div className="add-cards__form-buttons">
+                    <Button
+                      variant="primary"
+                      className="ng-button--block"
+                      onClick={handleAddOrUpdate}
+                    >
+                      {editingIndex !== null ? "SAVE CHANGES" : "ADD CARD"}
+                    </Button>
+                    {editingIndex !== null && (
+                      <Button
+                        variant="secondary"
+                        className="ng-button--block"
+                        onClick={handleCancelEdit}
+                      >
+                        CANCEL
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              )}
-            </Card>
+              </Card>
+            </div>
 
-            {!numberOnly && (
+            <div className="add-cards__right">
               <Card className="add-cards__list">
                 <h2>ADDED CARDS</h2>
                 {cards.length === 0 ? (
                   <p className="add-cards__empty">No cards added yet.</p>
                 ) : (
-                  <div className="ng-table-wrapper">
-                    <table className="ng-table">
-                      <thead>
-                        <tr>
-                          <th>PLAYER</th>
-                          <th>YEAR</th>
-                          <th>SET</th>
-                          <th>CARD #</th>
-                          <th>ACTIONS</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {cards.map((card, index) => (
-                          <tr className="ng-table__row" key={index}>
-                            <td className="ng-table__cell">{card.player}</td>
-                            <td className="ng-table__cell">{card.year}</td>
-                            <td className="ng-table__cell">{card.set}</td>
-                            <td className="ng-table__cell">
-                              {card.cardNumber}
-                            </td>
-                            <td className="ng-table__cell">
-                              <div className="add-cards__row-actions">
-                                <button
-                                  type="button"
-                                  className="add-cards__action"
-                                  onClick={() => handleEditCard(index)}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  className="add-cards__action add-cards__action--danger"
-                                  onClick={() => handleDeleteCard(index)}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="add-cards__stack">
+                    {cards.map((card, index) => (
+                      <div className="add-cards__item" key={index}>
+                        <div>
+                          <p className="add-cards__item-title">{card.player}</p>
+                          <p className="add-cards__item-meta">
+                            {card.year} • {card.set} • #{card.cardNumber}
+                          </p>
+                          <p className="add-cards__item-price">
+                            ${card.price} selected
+                          </p>
+                        </div>
+                        <div className="add-cards__item-actions">
+                          <button
+                            type="button"
+                            className="add-cards__action add-cards__action--primary"
+                            onClick={() => handleEditCard(index)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="add-cards__action add-cards__action--danger"
+                            onClick={() => handleDeleteCard(index)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </Card>
-            )}
 
-            <div className="add-cards__actions">
+              <Card className="add-cards__pricing">
+                <h2>CHOOSE YOUR PRICE</h2>
+                <div className="add-cards__pricing-options">
+                  {[5, 10, 20].map((price) => (
+                    <button
+                      key={price}
+                      type="button"
+                      className={`add-cards__price-option${
+                        selectedPrice === price
+                          ? " add-cards__price-option--active"
+                          : ""
+                      }`}
+                      onClick={() => handlePriceSelect(price)}
+                    >
+                      ${price}
+                    </button>
+                  ))}
+                </div>
+                {errors.price && (
+                  <p className="add-cards__error">{errors.price}</p>
+                )}
+                {errors.submit && !errors.price && (
+                  <p className="add-cards__error">{errors.submit}</p>
+                )}
+              </Card>
+            </div>
+
+            <div className="add-cards__actions add-cards__actions--centered">
               <Button
                 variant="secondary"
                 onClick={handleSaveAndExit}

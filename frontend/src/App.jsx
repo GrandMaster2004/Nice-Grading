@@ -11,6 +11,8 @@ import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 import { LandingLayout } from "./layouts/LandingLayout.jsx";
 import { LandingPage } from "./pages/Landing.jsx";
 import { LoginPage, RegisterPage } from "./pages/Auth.jsx";
+import { ForgotPasswordPage } from "./pages/ForgotPassword.jsx";
+import { ResetPasswordPage } from "./pages/ResetPassword.jsx";
 import { DashboardPage } from "./pages/Dashboard.jsx";
 import { AddCardsPage } from "./pages/AddCards.jsx";
 import { SubmissionReviewPage } from "./pages/SubmissionReview.jsx";
@@ -37,6 +39,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
 
         <Route

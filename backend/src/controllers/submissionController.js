@@ -24,7 +24,7 @@ export const createSubmission = asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const pricing = calculatePricing(value.cardCount, value.serviceTier);
+  const pricing = calculatePricing(value.cards);
   const orderSummary = formatOrderSummary(
     value.cards,
     value.cardCount,

@@ -1515,6 +1515,7 @@
 }
 
 .landing__footer {
+  width: 100%;
   background: #000;
   color: #fff;
   padding: 2rem 1rem;

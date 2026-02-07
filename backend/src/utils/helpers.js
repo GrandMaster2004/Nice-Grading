@@ -6,24 +6,9 @@ export const generateToken = (userId, role) => {
   });
 };
 
-export const calculatePricing = (cardCount, serviceTier) => {
-  let basePrice = 0;
-
-  switch (serviceTier) {
-    case "SPEED_DEMON":
-      basePrice = 289;
-      break;
-    case "THE_STANDARD":
-      basePrice = 49;
-      break;
-    case "BIG_MONEY":
-      basePrice = 69;
-      break;
-    default:
-      throw new Error("Invalid service tier");
-  }
-
-  const processingFee = Math.round(basePrice * 0.05 * 100) / 100;
+export const calculatePricing = (cards) => {
+  const basePrice = cards.reduce((sum, card) => sum + (card.price || 0), 0);
+  const processingFee = 0;
   const total = Math.round((basePrice + processingFee) * 100) / 100;
 
   return {
@@ -36,7 +21,8 @@ export const calculatePricing = (cardCount, serviceTier) => {
 export const formatOrderSummary = (cards, cardCount, serviceTier, pricing) => {
   const cardList = cards
     .map(
-      (card) => `${card.player}, ${card.year}, ${card.set} #${card.cardNumber}`,
+      (card) =>
+        `${card.player}, ${card.year}, ${card.set} #${card.cardNumber} ($${card.price})`,
     )
     .join("\n");
 
