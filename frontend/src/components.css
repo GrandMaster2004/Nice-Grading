@@ -407,8 +407,8 @@
 }
 
 .landing__hero {
-  height: 94vh;
-  min-height: 94vh;
+  height: 93vh;
+  min-height: 93vh;
   background: linear-gradient(180deg, #00a8e8 0%, #ff69b4 45%, #ffd700 100%);
   color: #fff;
   position: relative;
@@ -641,6 +641,13 @@
   text-transform: uppercase;
   margin: 0 0 0.5rem;
   text-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 640px) {
+  .landing__hero-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    margin-top: 10px;
+  }
 }
 
 .landing__hero-text {
