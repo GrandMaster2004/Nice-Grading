@@ -23,8 +23,22 @@ import "./index.css";
 
 function App() {
   const { user, loading, logout, isAdmin } = useAuth();
+  const [showLoader, setShowLoader] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      // Only show loader if loading takes more than 300ms
+      timer = setTimeout(() => {
+        setShowLoader(true);
+      }, 300);
+    } else {
+      setShowLoader(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  if (showLoader) {
     return (
       <div className="loading-screen">
         <div className="stacked-cards">
