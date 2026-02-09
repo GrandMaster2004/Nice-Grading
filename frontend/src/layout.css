@@ -2978,6 +2978,7 @@
   position: relative;
   width: 280px;
   height: 480px;
+  margin-top: 40px;
   perspective: 1200px;
   --stack-dur: 2.5s;
   --stack-delay: 0.08;
