@@ -407,8 +407,8 @@
 }
 
 .landing__hero {
-  height: 92vh;
-  min-height: 92vh;
+  height: 94vh;
+  min-height: 94vh;
   background: linear-gradient(180deg, #00a8e8 0%, #ff69b4 45%, #ffd700 100%);
   color: #fff;
   position: relative;
@@ -662,6 +662,7 @@
 }
 
 .landing__cta {
+  z-index: 11;
   border: none;
   border-radius: 999px;
   padding: 0.8rem 2rem;
@@ -1118,18 +1119,67 @@
 @media (max-width: 640px) {
   .landing__process-steps {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    gap: 0;
   }
 
   .landing__process-step {
     width: 100%;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1rem;
   }
 
   .landing__process-badge {
     width: 4.5rem;
     height: 4.5rem;
     font-size: 2rem;
+  }
+
+  .landing__process-arrow {
+    display: flex !important;
+    transform: rotate(90deg);
+    margin: 1.5rem auto !important;
+    padding: 0 !important;
+    width: 40px;
+    height: 40px;
+    background-color: #f3f4f6;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .landing__process-arrow svg {
+    color: #000 !important;
+    fill: none !important;
+    width: 24px;
+    height: 24px;
+  }
+
+  .landing__process-arrow svg path {
+    stroke: #000 !important;
+    stroke-width: 2.5 !important;
+  }
+
+  .landing__process-description {
+    display: block !important;
+    visibility: visible !important;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+    color: #1f2937 !important;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    text-transform: none;
+    letter-spacing: normal;
+    text-align: center;
+    max-width: 100%;
+    opacity: 1 !important;
+    border: 1px solid #e5e7eb;
   }
 }
 
@@ -1168,6 +1218,10 @@
   justify-content: center;
   padding: 0 1rem;
   margin-bottom: 2rem; /* Account for the text label height to center arrow relative to box */
+}
+
+.landing__process-description {
+  display: none; /* Hidden by default (desktop) */
 }
 
 /* Specific Badge Gradients */

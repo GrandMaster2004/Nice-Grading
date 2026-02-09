@@ -257,55 +257,68 @@ export const LandingPage = () => {
                 <h2>The Process (Real-One Edition)</h2>
                 <div className="landing__process-steps">
                   {["PACK 'EM.", "SHIP 'EM.", "GRADE 'EM", "FLEX 'EM"].map(
-                    (label, index, array) => (
-                      <div key={label} style={{ display: "contents" }}>
-                        <div className="landing__process-step">
-                          <div
-                            className={`landing__process-badge landing__process-badge--${index + 1}`}
-                          >
-                            {index + 1 === 4 ? (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                width="24"
-                                height="24"
-                              >
-                                <path
-                                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                                  stroke="currentColor"
-                                  strokeWidth={2}
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  fill="none"
-                                />
-                              </svg>
-                            ) : (
-                              <span>{index + 1}</span>
+                    (label, index, array) => {
+                      const descriptions = [
+                        "Carefully pack your cards using protective sleeves and holders.",
+                        "Ship your package securely to our grading facility.",
+                        "Our experts professionally grade and authenticate your cards.",
+                      ];
+
+                      return (
+                        <div key={label} style={{ display: "contents" }}>
+                          <div className="landing__process-step">
+                            <div
+                              className={`landing__process-badge landing__process-badge--${index + 1}`}
+                            >
+                              {index + 1 === 4 ? (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  width="24"
+                                  height="24"
+                                >
+                                  <path
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    fill="none"
+                                  />
+                                </svg>
+                              ) : (
+                                <span>{index + 1}</span>
+                              )}
+                            </div>
+                            <span>{label}</span>
+                            {index < 3 && (
+                              <p className="landing__process-description">
+                                {descriptions[index]}
+                              </p>
                             )}
                           </div>
-                          <span>{label}</span>
+                          {index < array.length - 1 && (
+                            <div className="landing__process-arrow">
+                              <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M5 12H19M19 12L12 5M19 12L12 19"
+                                  stroke="black"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </div>
+                          )}
                         </div>
-                        {index < array.length - 1 && (
-                          <div className="landing__process-arrow">
-                            <svg
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M5 12H19M19 12L12 5M19 12L12 19"
-                                stroke="black"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    ),
+                      );
+                    },
                   )}
                 </div>
               </div>

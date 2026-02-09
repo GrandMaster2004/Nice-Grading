@@ -138,12 +138,12 @@ export const PaymentPage = ({ user, onLogout }) => {
 
   if (!submissionData) {
     return (
-      <div className="ng-app-shell ng-app-shell--dark">
-        <Header user={user} onLogout={onLogout} />
-        <Container>
-          <p className="ng-loading-screen__text">Loading...</p>
-        </Container>
-        <LandingFooter />
+      <div className="loading-screen">
+        <div className="stacked-cards">
+          <div className="stacked-cards__card stacked-cards__card--top"></div>
+          <div className="stacked-cards__card stacked-cards__card--middle"></div>
+          <div className="stacked-cards__card stacked-cards__card--bottom"></div>
+        </div>
       </div>
     );
   }

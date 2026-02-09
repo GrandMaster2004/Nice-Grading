@@ -8,10 +8,19 @@ const AuthPage = ({ mode = "login" }) => {
   const { login, register, loading, error: authError } = useAuth();
   const [errors, setErrors] = useState({});
   const [isRegister, setIsRegister] = useState(mode === "register");
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   useEffect(() => {
     setIsRegister(mode === "register");
   }, [mode]);
+
+  useEffect(() => {
+    // Simulate page load
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 1400);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +47,18 @@ const AuthPage = ({ mode = "login" }) => {
   };
 
   return (
-    <main className="auth-section">
+    <main
+      className={`auth-section ${isPageLoading ? "is-loading" : "is-loaded"}`}
+    >
+      {isPageLoading && (
+        <div className="loading-screen">
+          <div className="stacked-cards">
+            <div className="stacked-cards__card stacked-cards__card--top"></div>
+            <div className="stacked-cards__card stacked-cards__card--middle"></div>
+            <div className="stacked-cards__card stacked-cards__card--bottom"></div>
+          </div>
+        </div>
+      )}
       <div className="auth-card">
         <h1 className="auth-card__title">
           {isRegister ? "CREATE ACCOUNT" : "LOGIN"}

@@ -2831,13 +2831,24 @@
 /* Auth */
 .auth-section {
   width: 100%;
-  background:
-    linear-gradient(rgba(5, 5, 5, 0.7), rgba(5, 5, 5, 0.7)),
-    url("/bg.jpeg") center / cover no-repeat;
+  min-height: 100vh;
+  height: 100svh;
+  background-image:
+    linear-gradient(rgba(5, 5, 5, 0.7), rgba(5, 5, 5, 0.7)), url("/bg.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 3rem clamp(1rem, 4vw, 2rem);
+}
+
+@supports (height: 100dvh) {
+  .auth-section {
+    height: 100dvh;
+  }
 }
 
 .auth-card {
@@ -2936,6 +2947,227 @@
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.95rem;
   line-height: 1.5;
+}
+
+/* Loading Screen */
+.auth-section.is-loading {
+  pointer-events: none;
+}
+
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
+  z-index: 9999;
+}
+
+@supports (height: 100dvh) {
+  .loading-screen {
+    height: 100dvh;
+  }
+}
+
+/* Stacked Cards Loader */
+.stacked-cards {
+  position: relative;
+  width: 280px;
+  height: 480px;
+  perspective: 1200px;
+  --stack-dur: 2.5s;
+  --stack-delay: 0.08;
+  --stack-spacing: 18%;
+}
+
+.stacked-cards__card {
+  position: absolute;
+  width: 160px;
+  height: 200px;
+  aspect-ratio: 0.8;
+  border-radius: 20px;
+  left: 50%;
+  top: var(--stack-spacing);
+  margin: auto;
+  transform-origin: center;
+  transform: translate(-50%, -50%) rotateX(45deg) rotateZ(-45deg);
+  transform-style: preserve-3d;
+  z-index: 1;
+}
+
+.stacked-cards__card::before {
+  animation: card-flip var(--stack-dur) infinite;
+  border-radius: 20px;
+  box-shadow: -8px 8px 24px rgba(0, 0, 0, 0.2);
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.stacked-cards__card--top {
+  --card-bg: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
+  z-index: 3;
+  top: var(--stack-spacing);
+}
+
+.stacked-cards__card--top::before {
+  background: var(--card-bg);
+  animation-delay: calc(var(--stack-dur) * (-1 + var(--stack-delay)));
+}
+
+.stacked-cards__card--middle {
+  --card-bg: linear-gradient(135deg, #6b9eff 0%, #82b1ff 100%);
+  z-index: 2;
+  top: 0;
+}
+
+.stacked-cards__card--middle::before {
+  background: var(--card-bg);
+  animation-delay: calc(var(--stack-dur) * (-1 + var(--stack-delay) * 2));
+}
+
+.stacked-cards__card--bottom {
+  --card-bg: linear-gradient(135deg, #1e5cff 0%, #0047b3 100%);
+  z-index: 1;
+  top: calc(var(--stack-spacing) * -1);
+}
+
+.stacked-cards__card--bottom::before {
+  background: var(--card-bg);
+  animation-delay: calc(var(--stack-dur) * (-1 + var(--stack-delay) * 3));
+}
+
+.stacked-cards__icon {
+  width: 60px;
+  height: 60px;
+  color: #1a1a2e;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  display: none;
+}
+
+@keyframes card-flip {
+  0%,
+  100% {
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+    transform: translateZ(0);
+  }
+  11% {
+    animation-timing-function: cubic-bezier(0.32, 0, 0.67, 0);
+    opacity: 1;
+    transform: translateZ(2px);
+  }
+  34% {
+    animation-timing-function: steps(1);
+    opacity: 0;
+    transform: translateZ(-192px);
+  }
+  48% {
+    animation-timing-function: linear;
+    opacity: 0;
+    transform: translateZ(192px);
+  }
+  57% {
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    opacity: 1;
+    transform: translateZ(0);
+  }
+  61% {
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+    transform: translateZ(-28.8px);
+  }
+  74% {
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+    transform: translateZ(9.6px);
+  }
+  87% {
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+    transform: translateZ(-3.2px);
+  }
+}
+
+/* Fade Out Loader & Fade In Content */
+.auth-section.is-loaded .loading-screen {
+  animation: loading-fade-out 0.8s ease-out forwards;
+}
+
+.auth-section.is-loaded .auth-card {
+  animation: content-fade-in 0.8s ease-out 0.2s backwards;
+}
+
+@keyframes loading-fade-out {
+  0% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes content-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Respect Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  .stacked-cards__card {
+    animation: none;
+  }
+
+  .stacked-cards__card--top {
+    transform: translate(-50%, -50%) translateZ(0px) rotateX(15deg)
+      rotateY(-15deg);
+  }
+
+  .stacked-cards__card--middle {
+    transform: translate(-50%, -50%) translateY(20px) rotateX(15deg)
+      rotateY(-15deg);
+  }
+
+  .stacked-cards__card--bottom {
+    transform: translate(-50%, -50%) translateY(40px) rotateX(15deg)
+      rotateY(-15deg);
+  }
+
+  .auth-section.is-loaded .loading-screen,
+  .auth-section.is-loaded .auth-card {
+    animation: none;
+  }
+
+  .auth-section.is-loaded .loading-screen {
+    display: none;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .stacked-cards {
+    width: 220px;
+    height: 220px;
+  }
+
+  .stacked-cards__card {
+    width: 130px;
+    height: 160px;
+  }
+
+  .stacked-cards__icon {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 /* Payment */
