@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-export const Header = ({ user, onLogout }) => {
+export const Header = ({ user, onLogout, pricingRef, hallOfFlexRef }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const showAuth = Boolean(user);
   const isAdmin = user?.role === "admin";
+
+  const scrollToSection = (ref) => {
+    setMenuOpen(false);
+    if (ref?.current) {
+      ref.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   const handleUserClick = () => {
     // Route admins to admin panel, customers to dashboard
@@ -75,26 +82,19 @@ export const Header = ({ user, onLogout }) => {
         </button>
 
         <nav className="ng-header__nav" aria-label="Primary">
-          <a className="ng-header__link" href="#pricing">
+          <button
+            className="ng-header__link"
+            type="button"
+            onClick={() => scrollToSection(pricingRef)}
+          >
             PRICING
-          </a>
-          <a className="ng-header__link" href="#hall-of-flex">
+          </button>
+          <button
+            className="ng-header__link"
+            type="button"
+            onClick={() => scrollToSection(hallOfFlexRef)}
+          >
             HALL OF FLEX
-          </a>
-          <button className="ng-header__icon" type="button" aria-label="Search">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
           </button>
         </nav>
 
@@ -142,39 +142,19 @@ export const Header = ({ user, onLogout }) => {
         className={`ng-header__mobile${menuOpen ? " ng-header__mobile--open" : ""}`}
       >
         <div className="ng-header__mobile-links">
-          <a
+          <button
             className="ng-header__link"
-            href="#pricing"
-            onClick={() => setMenuOpen(false)}
+            type="button"
+            onClick={() => scrollToSection(pricingRef)}
           >
             PRICING
-          </a>
-          <a
+          </button>
+          <button
             className="ng-header__link"
-            href="#hall-of-flex"
-            onClick={() => setMenuOpen(false)}
+            type="button"
+            onClick={() => scrollToSection(hallOfFlexRef)}
           >
             HALL OF FLEX
-          </a>
-          <button
-            className="ng-header__icon"
-            type="button"
-            aria-label="Search"
-            onClick={() => setMenuOpen(false)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
           </button>
         </div>
 

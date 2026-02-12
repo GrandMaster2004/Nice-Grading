@@ -1,4 +1,5 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 
 const TicketCard = ({ color, children, className = "" }) => {
   return (
@@ -68,6 +69,7 @@ const collageImages = [
 ];
 
 export const LandingPage = () => {
+  const { pricingRef, hallOfFlexRef } = useOutletContext();
   const [tickerTime, setTickerTime] = useState(() => new Date());
 
   useEffect(() => {
@@ -159,7 +161,7 @@ export const LandingPage = () => {
       <div className="landing__content">
         <div className="landing__content-inner">
           <div className="landing__columns">
-            <div className="landing__pricing">
+            <div className="landing__pricing" ref={pricingRef}>
               <div className="landing__pricing-head">
                 <h2>Choose Your Energy</h2>
               </div>
@@ -335,7 +337,7 @@ export const LandingPage = () => {
               </div>
             </div>
 
-            <div className="landing__gallery">
+            <div className="landing__gallery" ref={hallOfFlexRef}>
               <h2>The Hall of Flex</h2>
               <div className="landing__gallery-grid">
                 {hallOfFlex.map((item) => (
