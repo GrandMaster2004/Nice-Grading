@@ -120,10 +120,31 @@ export const AddCardsPage = ({ user, onLogout }) => {
 
   const validateCardForm = () => {
     const newErrors = {};
-    if (!cardForm.player) newErrors.player = "Required";
-    if (!cardForm.year) newErrors.year = "Required";
+
+    if (!cardForm.player) {
+      newErrors.player = "Required";
+    } else if (cardForm.player.length < 3) {
+      newErrors.player = "Minimum 3 characters required.";
+    } else if (!/^[a-zA-Z\s]+$/.test(cardForm.player)) {
+      newErrors.player = "Only alphabets allowed.";
+    }
+
+    if (!cardForm.year) {
+      newErrors.year = "Required";
+    } else if (!/^\d{4}$/.test(cardForm.year)) {
+      newErrors.year = "Year must be exactly 4 digits.";
+    }
+
     if (!cardForm.set) newErrors.set = "Required";
-    if (!cardForm.cardNumber) newErrors.cardNumber = "Required";
+
+    if (!cardForm.cardNumber) {
+      newErrors.cardNumber = "Required";
+    } else if (cardForm.cardNumber.length !== 6) {
+      newErrors.cardNumber = "Card ID must be exactly 6 characters.";
+    } else if (!/^[a-zA-Z0-9]{6}$/.test(cardForm.cardNumber)) {
+      newErrors.cardNumber = "Only alphanumeric characters allowed.";
+    }
+
     return newErrors;
   };
 
@@ -319,6 +340,18 @@ export const AddCardsPage = ({ user, onLogout }) => {
                       handleFieldChange("player", e.target.value)
                     }
                     error={errors.player}
+                    onBlur={() => {
+                      const playerErrors = {};
+                      if (cardForm.player.length > 0) {
+                        if (cardForm.player.length < 3) {
+                          playerErrors.player =
+                            "Minimum 3 characters required.";
+                        } else if (!/^[a-zA-Z\s]+$/.test(cardForm.player)) {
+                          playerErrors.player = "Only alphabets allowed.";
+                        }
+                        setErrors((prev) => ({ ...prev, ...playerErrors }));
+                      }
+                    }}
                   />
                   <Input
                     label="YEAR"
@@ -326,6 +359,15 @@ export const AddCardsPage = ({ user, onLogout }) => {
                     value={cardForm.year}
                     onChange={(e) => handleFieldChange("year", e.target.value)}
                     error={errors.year}
+                    onBlur={() => {
+                      const yearErrors = {};
+                      if (cardForm.year.length > 0) {
+                        if (!/^\d{4}$/.test(cardForm.year)) {
+                          yearErrors.year = "Year must be exactly 4 digits.";
+                        }
+                        setErrors((prev) => ({ ...prev, ...yearErrors }));
+                      }
+                    }}
                   />
                   <Input
                     label="SET"
@@ -342,6 +384,21 @@ export const AddCardsPage = ({ user, onLogout }) => {
                       handleFieldChange("cardNumber", e.target.value)
                     }
                     error={errors.cardNumber}
+                    onBlur={() => {
+                      const cardErrors = {};
+                      if (cardForm.cardNumber.length > 0) {
+                        if (cardForm.cardNumber.length !== 6) {
+                          cardErrors.cardNumber =
+                            "Card ID must be exactly 6 characters.";
+                        } else if (
+                          !/^[a-zA-Z0-9]{6}$/.test(cardForm.cardNumber)
+                        ) {
+                          cardErrors.cardNumber =
+                            "Only alphanumeric characters allowed.";
+                        }
+                        setErrors((prev) => ({ ...prev, ...cardErrors }));
+                      }
+                    }}
                   />
                   <Input
                     label="NOTES (OPTIONAL)"

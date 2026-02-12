@@ -514,6 +514,11 @@
   text-shadow: 0 0 16px rgba(176, 255, 0, 0.2);
 }
 
+.ng-header__user--authenticated {
+  color: #b0ff00;
+  text-shadow: 0 0 8px rgba(176, 255, 0, 0.4);
+}
+
 .ng-header__toggle {
   display: none;
   position: relative;
@@ -2978,7 +2983,7 @@
   position: relative;
   width: 280px;
   height: 480px;
-  margin-top: 40px;
+  margin-top: 140px;
   perspective: 1200px;
   --stack-dur: 2.5s;
   --stack-delay: 0.08;

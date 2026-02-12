@@ -1,13 +1,27 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export const LandingNavbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isLandingPage = location.pathname === "/";
 
   const handleNavigate = (path) => {
     setMenuOpen(false);
     navigate(path);
+  };
+
+  const handleScrollToSection = (sectionId) => {
+    setMenuOpen(false);
+    if (isLandingPage) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate("/", { state: { scrollTo: sectionId } });
+    }
   };
 
   return (
@@ -44,27 +58,24 @@ export const LandingNavbar = () => {
         className={`landing__nav-menu${menuOpen ? " landing__nav-menu--open" : ""}`}
       >
         <div className="landing__links">
-          <a href="#" className="landing__link">
-            PRICING
-          </a>
-          <a href="#" className="landing__link">
-            HALL OF FLEX
-          </a>
-          <button className="landing__icon" type="button" aria-label="Search">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </button>
+          {isLandingPage && (
+            <>
+              <button
+                type="button"
+                onClick={() => handleScrollToSection("pricing-section")}
+                className="landing__link"
+              >
+                PRICING
+              </button>
+              <button
+                type="button"
+                onClick={() => handleScrollToSection("hall-of-flex-section")}
+                className="landing__link"
+              >
+                HALL OF FLEX
+              </button>
+            </>
+          )}
         </div>
         <div className="landing__actions">
           <button

@@ -74,39 +74,17 @@ export const Header = ({ user, onLogout }) => {
           <span className="ng-header__toggle-bar"></span>
         </button>
 
-        <nav className="ng-header__nav" aria-label="Primary">
-          <a className="ng-header__link" href="#pricing">
-            PRICING
-          </a>
-          <a className="ng-header__link" href="#hall-of-flex">
-            HALL OF FLEX
-          </a>
-          <button className="ng-header__icon" type="button" aria-label="Search">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </button>
-        </nav>
+        <nav className="ng-header__nav" aria-label="Primary"></nav>
 
         <div className="ng-header__actions">
           {showAuth ? (
             <>
               <button
-                className="ng-header__user"
+                className="ng-header__user ng-header__user--authenticated"
                 type="button"
                 onClick={handleUserClick}
               >
-                {user.name}
+                {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
               </button>
               <button
                 onClick={onLogout}
@@ -141,54 +119,19 @@ export const Header = ({ user, onLogout }) => {
         id="ng-header-mobile-menu"
         className={`ng-header__mobile${menuOpen ? " ng-header__mobile--open" : ""}`}
       >
-        <div className="ng-header__mobile-links">
-          <a
-            className="ng-header__link"
-            href="#pricing"
-            onClick={() => setMenuOpen(false)}
-          >
-            PRICING
-          </a>
-          <a
-            className="ng-header__link"
-            href="#hall-of-flex"
-            onClick={() => setMenuOpen(false)}
-          >
-            HALL OF FLEX
-          </a>
-          <button
-            className="ng-header__icon"
-            type="button"
-            aria-label="Search"
-            onClick={() => setMenuOpen(false)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </button>
-        </div>
+        <div className="ng-header__mobile-links"></div>
 
         <div className="ng-header__mobile-actions">
           {showAuth ? (
             <>
               <button
-                className="ng-header__user"
+                className="ng-header__user ng-header__user--authenticated"
                 type="button"
                 onClick={() =>
                   handleMenuNavigate(isAdmin ? "/admin" : "/dashboard")
                 }
               >
-                {user.name}
+                {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
               </button>
               <button
                 onClick={handleLogout}

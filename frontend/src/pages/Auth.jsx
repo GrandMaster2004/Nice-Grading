@@ -8,32 +8,82 @@ const AuthPage = ({ mode = "login" }) => {
   const { login, register, loading, error: authError } = useAuth();
   const [errors, setErrors] = useState({});
   const [isRegister, setIsRegister] = useState(mode === "register");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   useEffect(() => {
     setIsRegister(mode === "register");
+    setErrors({});
   }, [mode]);
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (isRegister && formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters.";
+    }
+
+    if (isRegister && formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData);
+
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       let user;
       if (isRegister) {
-        user = await register(data.name, data.email, data.password);
+        user = await register(formData.name, formData.email, formData.password);
       } else {
-        user = await login(data.email, data.password);
+        user = await login(formData.email, formData.password);
       }
 
-      // Route based on user role
       if (user.role === "admin") {
         navigate("/admin");
       } else {
         navigate("/dashboard");
       }
     } catch (err) {
-      setErrors({ submit: err.message });
+      const errorMessage = err.message || "An error occurred.";
+
+      if (errorMessage.toLowerCase().includes("email does not exist")) {
+        setErrors({ email: "Email does not exist." });
+      } else if (
+        errorMessage.toLowerCase().includes("incorrect password") ||
+        errorMessage.toLowerCase().includes("invalid password")
+      ) {
+        setErrors({ password: "Incorrect password." });
+      } else {
+        setErrors({ submit: errorMessage });
+      }
     }
   };
 
@@ -55,6 +105,8 @@ const AuthPage = ({ mode = "login" }) => {
               label="NAME"
               placeholder="Your name"
               required
+              value={formData.name}
+              onChange={handleInputChange}
               error={errors.name}
               disabled={loading}
             />
@@ -68,6 +120,8 @@ const AuthPage = ({ mode = "login" }) => {
               isRegister ? "your@email.com" : "Email & password fields"
             }
             required
+            value={formData.email}
+            onChange={handleInputChange}
             error={errors.email}
             disabled={loading}
           />
@@ -78,6 +132,8 @@ const AuthPage = ({ mode = "login" }) => {
             label={isRegister ? "PASSWORD" : ""}
             placeholder="Password"
             required
+            value={formData.password}
+            onChange={handleInputChange}
             error={errors.password}
             disabled={loading}
           />
@@ -89,6 +145,8 @@ const AuthPage = ({ mode = "login" }) => {
               label="CONFIRM PASSWORD"
               placeholder="Confirm password"
               required
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
               error={errors.confirmPassword}
               disabled={loading}
             />

@@ -226,7 +226,10 @@
 
 .ng-field__error {
   font-size: 0.75rem;
-  color: #f87171;
+  color: #ff0000 !important;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  display: block;
 }
 
 /* Cards */
@@ -382,7 +385,7 @@
 /* Landing page */
 .landing {
   background: #fff;
-  color: #050505;
+  color: #b0ff00;;
   overflow-x: hidden;
   min-height: 100vh;
 }
@@ -462,7 +465,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0.3rem clamp(1rem, 5vw, 4rem);
-  background: rgba(30, 30, 30, 0.7);
+  background: rgba(2, 2, 2, 0.7);
   flex-shrink: 0;
   position: relative;
   z-index: 10;
@@ -491,6 +494,15 @@
 }
 
 .landing__link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
   transition: color 0.2s ease;
 }
 

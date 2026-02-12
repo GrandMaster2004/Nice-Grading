@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const TicketCard = ({ color, children, className = "" }) => {
   return (
@@ -68,6 +69,7 @@ const collageImages = [
 ];
 
 export const LandingPage = () => {
+  const location = useLocation();
   const [tickerTime, setTickerTime] = useState(() => new Date());
 
   useEffect(() => {
@@ -77,6 +79,17 @@ export const LandingPage = () => {
 
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      setTimeout(() => {
+        const element = document.getElementById(location.state.scrollTo);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, [location.state?.scrollTo]);
 
   const tickerText = useMemo(() => {
     const formatted = new Intl.DateTimeFormat("en-US", {
@@ -159,7 +172,7 @@ export const LandingPage = () => {
       <div className="landing__content">
         <div className="landing__content-inner">
           <div className="landing__columns">
-            <div className="landing__pricing">
+            <div className="landing__pricing" id="pricing-section">
               <div className="landing__pricing-head">
                 <h2>Choose Your Energy</h2>
               </div>
@@ -335,7 +348,7 @@ export const LandingPage = () => {
               </div>
             </div>
 
-            <div className="landing__gallery">
+            <div className="landing__gallery" id="hall-of-flex-section">
               <h2>The Hall of Flex</h2>
               <div className="landing__gallery-grid">
                 {hallOfFlex.map((item) => (
