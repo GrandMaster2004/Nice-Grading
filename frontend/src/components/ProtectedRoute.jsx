@@ -1,15 +1,21 @@
 import { Navigate } from "react-router-dom";
-import { getToken, getUserRole } from "../utils/api.js";
+import { useAuth } from "../hooks/useAuth.js";
 
 export const ProtectedRoute = ({ children, requiredRole = null }) => {
-  const token = getToken();
-  const userRole = getUserRole();
+  const { isAuthenticated, isInitializing, user } = useAuth();
 
-  if (!token) {
+  // Show nothing while auth is initializing to prevent flickering
+  if (isInitializing) {
+    return null;
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && userRole !== requiredRole) {
+  // Check role if required
+  if (requiredRole && user?.role !== requiredRole) {
     return <Navigate to="/dashboard" replace />;
   }
 

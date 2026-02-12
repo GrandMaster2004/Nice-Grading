@@ -86,14 +86,13 @@ const AuthPage = ({ mode = "login" }) => {
       console.log("[Auth] Success:", user);
       // Only navigate on successful authentication
       if (user && user.role) {
-        // Small delay to show success state before navigation
-        setTimeout(() => {
-          if (user.role === "admin") {
-            navigate("/admin", { replace: true });
-          } else {
-            navigate("/dashboard", { replace: true });
-          }
-        }, 100);
+        // Navigate immediately - auth state is now updated
+        // ProtectedRoute will check isInitializing to prevent flicker
+        if (user.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
       }
     } catch (err) {
       // Stop loading immediately on error

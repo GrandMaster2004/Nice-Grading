@@ -22,21 +22,19 @@ import { AdminPage } from "./pages/Admin.jsx";
 import "./index.css";
 
 function App() {
-  const { user, loading, logout, isAdmin } = useAuth();
+  const { user, isInitializing, logout, isAdmin } = useAuth();
   const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
     let timer;
-    if (loading) {
-      // Only show loader if loading takes more than 300ms
-      timer = setTimeout(() => {
-        setShowLoader(true);
-      }, 300);
+    if (isInitializing) {
+      // Show loader immediately for initial auth check
+      setShowLoader(true);
     } else {
       setShowLoader(false);
     }
     return () => clearTimeout(timer);
-  }, [loading]);
+  }, [isInitializing]);
 
   if (showLoader) {
     return (

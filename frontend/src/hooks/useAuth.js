@@ -19,7 +19,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -29,11 +29,10 @@ export const AuthProvider = ({ children }) => {
     if (cachedUser && token) {
       setUser(cachedUser);
     }
-    setLoading(false);
+    setIsInitializing(false);
   }, []);
 
   const register = async (name, email, password) => {
-    setLoading(true);
     setError(null);
     try {
       const data = await apiCall("/api/auth/register", {
@@ -50,13 +49,10 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
   const login = async (email, password) => {
-    setLoading(true);
     setError(null);
     try {
       const data = await apiCall("/api/auth/login", {
@@ -73,8 +69,6 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -90,7 +84,7 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       user,
-      loading,
+      isInitializing,
       error,
       register,
       login,
@@ -98,7 +92,16 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated,
       isAdmin,
     }),
-    [user, loading, error, register, login, logout, isAuthenticated, isAdmin],
+    [
+      user,
+      isInitializing,
+      error,
+      register,
+      login,
+      logout,
+      isAuthenticated,
+      isAdmin,
+    ],
   );
 
   return createElement(AuthContext.Provider, { value }, children);
