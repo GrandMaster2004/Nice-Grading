@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth.js";
 export const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { isAuthenticated, isInitializing, user } = useAuth();
 
-  // Show nothing while auth is initializing to prevent flickering
+  // Return nothing while auth is initializing - prevents rendering until auth state is ready
   if (isInitializing) {
     return null;
   }

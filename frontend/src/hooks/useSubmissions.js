@@ -8,7 +8,7 @@ export const useSubmissions = () => {
   const [error, setError] = useState(null);
 
   const fetchSubmissions = useCallback(async (skipCache = false) => {
-    // Check cache first
+    // Check cache first and return immediately without loading state
     if (!skipCache) {
       const cached = sessionStorageManager.getSubmissions();
       if (cached) {
@@ -22,9 +22,10 @@ export const useSubmissions = () => {
 
     try {
       const data = await apiCall("/api/submissions");
-      sessionStorageManager.setSubmissions(data.submissions);
-      setSubmissions(data.submissions);
-      return data.submissions;
+      const submissions = data.submissions || [];
+      sessionStorageManager.setSubmissions(submissions);
+      setSubmissions(submissions);
+      return submissions;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -39,8 +40,9 @@ export const useSubmissions = () => {
 
     try {
       const data = await apiCall("/api/submissions/vault");
-      setSubmissions(data.submissions);
-      return data.submissions;
+      const submissions = data.submissions || [];
+      setSubmissions(submissions);
+      return submissions;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -54,7 +56,7 @@ export const useSubmissions = () => {
     // This prevents interference with fetchVaultSubmissions
     try {
       const data = await apiCall("/api/submissions/paid");
-      return data.submissions;
+      return data.submissions || [];
     } catch (err) {
       console.error("Error fetching paid submissions:", err);
       throw err;

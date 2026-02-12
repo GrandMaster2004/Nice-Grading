@@ -33,10 +33,6 @@ const AuthPage = ({ mode = "login" }) => {
       newErrors.confirmPassword = "Passwords do not match.";
     }
 
-    if (Object.keys(newErrors).length > 0) {
-      console.warn("[Auth] Validation failed:", newErrors);
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -74,9 +70,6 @@ const AuthPage = ({ mode = "login" }) => {
     setIsSubmitting(true);
 
     try {
-      console.log(
-        `[Auth] Attempting ${isRegister ? "registration" : "login"}...`,
-      );
       let user;
       if (isRegister) {
         user = await register(formData.name, formData.email, formData.password);
@@ -84,7 +77,6 @@ const AuthPage = ({ mode = "login" }) => {
         user = await login(formData.email, formData.password);
       }
 
-      console.log("[Auth] Success:", user);
       // Only navigate on successful authentication
       if (user && user.role) {
         // Navigate immediately - auth state is now updated
@@ -100,13 +92,6 @@ const AuthPage = ({ mode = "login" }) => {
       setIsSubmitting(false);
 
       // Stay on page and show error - do NOT navigate
-      console.error(
-        `[Auth] ${isRegister ? "Registration" : "Login"} failed:`,
-        err,
-      );
-      console.error("[Auth] Error message:", err.message);
-      console.error("[Auth] Error details:", err);
-
       const errorMessage = (
         err.message || "Authentication failed"
       ).toLowerCase();
@@ -157,8 +142,6 @@ const AuthPage = ({ mode = "login" }) => {
         displayError = `❌ ${err.message || "Authentication failed. Please try again."}`;
       }
 
-      console.error("[Auth] Displaying error to user:", displayError);
-
       // Set the error in state to display in UI
       setErrors({ submit: displayError });
 
@@ -173,9 +156,6 @@ const AuthPage = ({ mode = "login" }) => {
         <h1 className="auth-card__title">
           {isRegister ? "CREATE ACCOUNT" : "LOGIN"}
         </h1>
-
-        {/* Debug: Show if we have any errors */}
-        {console.log("[Auth] Current errors state:", errors)}
 
         {/* Error display - Multiple methods to ensure visibility */}
         {errors.submit && (

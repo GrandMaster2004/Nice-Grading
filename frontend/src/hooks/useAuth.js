@@ -11,7 +11,9 @@ import {
   getToken,
   setToken,
   setUser as saveUser,
-  setUserRole,
+  removeToken,
+  removeUser as clearUser,
+  getUser,
 } from "../utils/api.js";
 import { sessionStorageManager } from "../utils/cache.js";
 
@@ -22,15 +24,35 @@ export const AuthProvider = ({ children }) => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState(null);
 
+  // Initialize from sessionStorage on mount
+  // This runs only once when the app loads
   useEffect(() => {
-    const cachedUser = sessionStorageManager.getUser();
-    const token = getToken();
+    const initializeAuth = () => {
+      try {
+        const token = getToken();
+        const cachedUser = getUser();
 
-    if (cachedUser && token) {
-      setUser(cachedUser);
-    }
-    setIsInitializing(false);
-  }, []);
+        // Only restore auth if both token and user exist in sessionStorage
+        if (token && cachedUser) {
+          setUser(cachedUser);
+        } else {
+          // Clear both if either is missing (corrupted state)
+          removeToken();
+          clearUser();
+        }
+      } catch (err) {
+        console.error("Error initializing auth:", err);
+        // Clear auth on initialization error
+        removeToken();
+        clearUser();
+      } finally {
+        // Always finish initializing, even if restoration failed
+        setIsInitializing(false);
+      }
+    };
+
+    initializeAuth();
+  }, []); // Only run once on mount
 
   const register = async (name, email, password) => {
     setError(null);
@@ -40,9 +62,10 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ name, email, password }),
       });
 
+      // Store token and user in sessionStorage (session-based auth)
       setToken(data.token);
       saveUser(data.user);
-      setUserRole(data.user.role);
+      // Update local state to trigger re-renders
       setUser(data.user);
 
       return data.user;
@@ -60,9 +83,10 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
+      // Store token and user in sessionStorage (session-based auth)
       setToken(data.token);
       saveUser(data.user);
-      setUserRole(data.user.role);
+      // Update local state to trigger re-renders
       setUser(data.user);
 
       return data.user;
@@ -73,8 +97,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Clear auth from sessionStorage
+    removeToken();
+    clearUser();
+    // Clear other cached data
     sessionStorageManager.clear();
-    localStorage.clear();
+    // Clear local auth state
     setUser(null);
   };
 
@@ -92,16 +120,7 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated,
       isAdmin,
     }),
-    [
-      user,
-      isInitializing,
-      error,
-      register,
-      login,
-      logout,
-      isAuthenticated,
-      isAdmin,
-    ],
+    [user, isInitializing, error],
   );
 
   return createElement(AuthContext.Provider, { value }, children);

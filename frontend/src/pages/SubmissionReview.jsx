@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card } from "../components/UI.jsx";
+import { Button, Card, StackedCardsLoader } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
 import { LandingFooter } from "../components/LandingChrome.jsx";
 import { sessionStorageManager } from "../utils/cache.js";
@@ -10,12 +10,17 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
   const [pricing, setPricing] = useState(null);
+  const hasMountedRef = useRef(false);
   const { fetchSubmissions } = useSubmissions();
 
   useEffect(() => {
+    if (hasMountedRef.current) return;
+    hasMountedRef.current = true;
+
     const loadSubmission = async () => {
       try {
-        const submissions = await fetchSubmissions(true);
+        // Try cache first (skipCache = false uses cache)
+        const submissions = await fetchSubmissions(false);
         const unpaidSubmission = submissions.find(
           (sub) => sub.paymentStatus !== "paid",
         );
@@ -53,6 +58,7 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
         console.error("Error loading submission review:", error);
       }
 
+      // Fallback to sessionStorage
       const cached = sessionStorageManager.getSubmissionForm();
       if (cached) {
         const unpaidCards = (cached.cards || []).filter(
@@ -85,7 +91,7 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
     };
 
     loadSubmission();
-  }, [fetchSubmissions, navigate]);
+  }, []); // Only run once on mount
 
   const handleProceedToPayment = () => {
     navigate("/payment", { state: { formData, pricing } });
@@ -97,15 +103,7 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
   };
 
   if (!formData) {
-    return (
-      <div className="loading-screen">
-        <div className="stacked-cards">
-          <div className="stacked-cards__card stacked-cards__card--top"></div>
-          <div className="stacked-cards__card stacked-cards__card--middle"></div>
-          <div className="stacked-cards__card stacked-cards__card--bottom"></div>
-        </div>
-      </div>
-    );
+    return <StackedCardsLoader />;
   }
 
   return (

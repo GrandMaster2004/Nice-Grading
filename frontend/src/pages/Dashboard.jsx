@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, LoadingSkeleton } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
@@ -132,9 +132,13 @@ export const DashboardPage = ({ user, onLogout }) => {
   const [paidError, setPaidError] = useState(null);
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
+  const hasMountedRef = useRef(false);
 
-  // Fetch both vault and paid submissions on component mount
+  // Fetch both vault and paid submissions on component mount (once only)
   useEffect(() => {
+    if (hasMountedRef.current) return;
+    hasMountedRef.current = true;
+
     const loadVaultData = async () => {
       try {
         // Fetch unpaid submissions for Your Vault

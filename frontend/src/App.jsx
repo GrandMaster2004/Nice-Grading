@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,21 +6,56 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth.js";
-import { getToken } from "./utils/api.js";
 import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
+import { StackedCardsLoader } from "./components/UI.jsx";
 import { LandingLayout } from "./layouts/LandingLayout.jsx";
-import { LandingPage } from "./pages/Landing.jsx";
-import { LoginPage, RegisterPage } from "./pages/Auth.jsx";
-import { ForgotPasswordPage } from "./pages/ForgotPassword.jsx";
-import { ResetPasswordPage } from "./pages/ResetPassword.jsx";
-import { NotFoundPage } from "./pages/NotFound.jsx";
-import { DashboardPage } from "./pages/Dashboard.jsx";
-import { AddCardsPage } from "./pages/AddCards.jsx";
-import { SubmissionReviewPage } from "./pages/SubmissionReview.jsx";
-import { PaymentPage } from "./pages/Payment.jsx";
-import { ConfirmationPage } from "./pages/Confirmation.jsx";
-import { AdminPage } from "./pages/Admin.jsx";
 import "./index.css";
+
+// Lazy load pages to reduce initial bundle size
+const LandingPage = lazy(() =>
+  import("./pages/Landing.jsx").then((m) => ({ default: m.LandingPage })),
+);
+const LoginPage = lazy(() =>
+  import("./pages/Auth.jsx").then((m) => ({ default: m.LoginPage })),
+);
+const RegisterPage = lazy(() =>
+  import("./pages/Auth.jsx").then((m) => ({ default: m.RegisterPage })),
+);
+const ForgotPasswordPage = lazy(() =>
+  import("./pages/ForgotPassword.jsx").then((m) => ({
+    default: m.ForgotPasswordPage,
+  })),
+);
+const ResetPasswordPage = lazy(() =>
+  import("./pages/ResetPassword.jsx").then((m) => ({
+    default: m.ResetPasswordPage,
+  })),
+);
+const NotFoundPage = lazy(() =>
+  import("./pages/NotFound.jsx").then((m) => ({ default: m.NotFoundPage })),
+);
+const DashboardPage = lazy(() =>
+  import("./pages/Dashboard.jsx").then((m) => ({ default: m.DashboardPage })),
+);
+const AddCardsPage = lazy(() =>
+  import("./pages/AddCards.jsx").then((m) => ({ default: m.AddCardsPage })),
+);
+const SubmissionReviewPage = lazy(() =>
+  import("./pages/SubmissionReview.jsx").then((m) => ({
+    default: m.SubmissionReviewPage,
+  })),
+);
+const PaymentPage = lazy(() =>
+  import("./pages/Payment.jsx").then((m) => ({ default: m.PaymentPage })),
+);
+const ConfirmationPage = lazy(() =>
+  import("./pages/Confirmation.jsx").then((m) => ({
+    default: m.ConfirmationPage,
+  })),
+);
+const AdminPage = lazy(() =>
+  import("./pages/Admin.jsx").then((m) => ({ default: m.AdminPage })),
+);
 
 function LandingRouteGuard({ children }) {
   const { isAuthenticated } = useAuth();
@@ -44,118 +79,101 @@ function AuthRouteGuard({ children }) {
 
 function App() {
   const { user, isInitializing, logout, isAdmin } = useAuth();
-  const [showLoader, setShowLoader] = useState(false);
 
-  useEffect(() => {
-    let timer;
-    if (isInitializing) {
-      // Show loader immediately for initial auth check
-      setShowLoader(true);
-    } else {
-      setShowLoader(false);
-    }
-    return () => clearTimeout(timer);
-  }, [isInitializing]);
-
-  if (showLoader) {
-    return (
-      <div className="loading-screen">
-        <div className="stacked-cards">
-          <div className="stacked-cards__card stacked-cards__card--top"></div>
-          <div className="stacked-cards__card stacked-cards__card--middle"></div>
-          <div className="stacked-cards__card stacked-cards__card--bottom"></div>
-        </div>
-      </div>
-    );
+  // Only show loader during initial auth check
+  if (isInitializing) {
+    return <StackedCardsLoader />;
   }
 
   return (
     <Router>
-      <Routes>
-        <Route element={<LandingLayout user={user} onLogout={logout} />}>
+      <Suspense fallback={<StackedCardsLoader />}>
+        <Routes>
+          <Route element={<LandingLayout user={user} onLogout={logout} />}>
+            <Route
+              path="/"
+              element={
+                <LandingRouteGuard>
+                  <LandingPage />
+                </LandingRouteGuard>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <AuthRouteGuard>
+                  <LoginPage />
+                </AuthRouteGuard>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <AuthRouteGuard>
+                  <RegisterPage />
+                </AuthRouteGuard>
+              }
+            />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+
           <Route
-            path="/"
+            path="/dashboard"
             element={
-              <LandingRouteGuard>
-                <LandingPage />
-              </LandingRouteGuard>
+              <ProtectedRoute>
+                <DashboardPage user={user} onLogout={logout} />
+              </ProtectedRoute>
             }
           />
+
           <Route
-            path="/login"
+            path="/add-cards"
             element={
-              <AuthRouteGuard>
-                <LoginPage />
-              </AuthRouteGuard>
+              <ProtectedRoute>
+                <AddCardsPage user={user} onLogout={logout} />
+              </ProtectedRoute>
             }
           />
+
           <Route
-            path="/register"
+            path="/submission-review"
             element={
-              <AuthRouteGuard>
-                <RegisterPage />
-              </AuthRouteGuard>
+              <ProtectedRoute>
+                <SubmissionReviewPage user={user} onLogout={logout} />
+              </ProtectedRoute>
             }
           />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
 
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage user={user} onLogout={logout} />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute>
+                <PaymentPage user={user} onLogout={logout} />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/add-cards"
-          element={
-            <ProtectedRoute>
-              <AddCardsPage user={user} onLogout={logout} />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/confirmation"
+            element={
+              <ProtectedRoute>
+                <ConfirmationPage user={user} onLogout={logout} />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/submission-review"
-          element={
-            <ProtectedRoute>
-              <SubmissionReviewPage user={user} onLogout={logout} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/payment"
-          element={
-            <ProtectedRoute>
-              <PaymentPage user={user} onLogout={logout} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/confirmation"
-          element={
-            <ProtectedRoute>
-              <ConfirmationPage user={user} onLogout={logout} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <AdminPage user={user} onLogout={logout} />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminPage user={user} onLogout={logout} />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

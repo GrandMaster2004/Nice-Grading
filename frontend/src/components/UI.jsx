@@ -140,6 +140,18 @@ export const LoadingSkeleton = ({ lines = 3 }) => {
   );
 };
 
+export const StackedCardsLoader = () => {
+  return (
+    <div className="loading-screen">
+      <div className="stacked-cards">
+        <div className="stacked-cards__card stacked-cards__card--top"></div>
+        <div className="stacked-cards__card stacked-cards__card--middle"></div>
+        <div className="stacked-cards__card stacked-cards__card--bottom"></div>
+      </div>
+    </div>
+  );
+};
+
 export const Toast = ({ message, type = "info", onClose }) => {
   const typeClass = {
     success: "ng-toast--success",

@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export const apiCall = async (endpoint, options = {}) => {
   const url = `${API_URL}${endpoint}`;
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   const headers = {
     "Content-Type": "application/json",
@@ -22,6 +22,11 @@ export const apiCall = async (endpoint, options = {}) => {
     const data = await response.json();
 
     if (!response.ok) {
+      // If token is invalid (401), clear auth data
+      if (response.status === 401) {
+        removeToken();
+        removeUser();
+      }
       throw new Error(data.error || `HTTP ${response.status}`);
     }
 
@@ -31,18 +36,39 @@ export const apiCall = async (endpoint, options = {}) => {
   }
 };
 
-export const getToken = () => localStorage.getItem("token");
-export const setToken = (token) => localStorage.setItem("token", token);
-export const removeToken = () => localStorage.removeItem("token");
+// Get token from sessionStorage (session-based auth)
+export const getToken = () => sessionStorage.getItem("auth_token");
 
-export const getUserRole = () => localStorage.getItem("userRole");
-export const setUserRole = (role) => localStorage.setItem("userRole", role);
+// Set token in sessionStorage
+export const setToken = (token) => {
+  if (token) {
+    sessionStorage.setItem("auth_token", token);
+  }
+};
+
+// Remove token from sessionStorage
+export const removeToken = () => sessionStorage.removeItem("auth_token");
+
+export const getUserRole = () => {
+  const user = getUser();
+  return user?.role || null;
+};
+
+export const setUserRole = (role) => {
+  // Role is now derived from user object, no separate storage needed
+};
 
 export const getUser = () => {
-  const user = sessionStorage.getItem("user");
+  const user = sessionStorage.getItem("auth_user");
   return user ? JSON.parse(user) : null;
 };
 
-export const setUser = (user) =>
-  sessionStorage.setItem("user", JSON.stringify(user));
-export const removeUser = () => sessionStorage.removeItem("user");
+export const setUser = (user) => {
+  if (user) {
+    sessionStorage.setItem("auth_user", JSON.stringify(user));
+  }
+};
+
+export const removeUser = () => {
+  sessionStorage.removeItem("auth_user");
+};

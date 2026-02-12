@@ -16,5 +16,40 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: false,
     minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console logs in production
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Split vendor libraries into separate chunks
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom")) {
+              return "vendor-react";
+            }
+            if (id.includes("react-router")) {
+              return "vendor-router";
+            }
+            if (id.includes("stripe")) {
+              return "vendor-stripe";
+            }
+            return "vendor-other";
+          }
+          // Split routes into separate chunks
+          if (id.includes("src/pages")) {
+            return "pages";
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+    reportCompressedSize: false,
+  },
+  resolve: {
+    alias: {
+      "@": "/src",
+    },
   },
 });

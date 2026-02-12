@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, Card } from "../components/UI.jsx";
+import { Button, Input, Card, StackedCardsLoader } from "../components/UI.jsx";
 import { sessionStorageManager } from "../utils/cache.js";
 import { Header, Container } from "../layouts/MainLayout.jsx";
 import { LandingFooter } from "../components/LandingChrome.jsx";
@@ -22,47 +22,56 @@ export const AddCardsPage = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [currentSubmissionId, setCurrentSubmissionId] = useState(null);
   const serviceTier = "THE_STANDARD";
+  const hasMountedRef = useRef(false);
   const { fetchSubmissions, createSubmission, updateSubmission } =
     useSubmissions();
 
+  // Load unpaid cards only once on mount, try cache first
   useEffect(() => {
+    if (hasMountedRef.current) return;
+    hasMountedRef.current = true;
+
     const loadUnpaidCards = async () => {
       try {
-        // Try to fetch from DB first
-        const submissions = await fetchSubmissions(true);
+        // Try cache first (skipCache = false uses cache)
+        const submissions = await fetchSubmissions(false);
 
-        // Find the first unpaid submission
-        const unpaidSubmission = submissions.find(
-          (sub) => sub.paymentStatus !== "paid",
-        );
+        if (submissions && submissions.length > 0) {
+          // Find the first unpaid submission
+          const unpaidSubmission = submissions.find(
+            (sub) => sub.paymentStatus !== "paid",
+          );
 
-        if (unpaidSubmission && unpaidSubmission.cards) {
-          // Store the submission ID for updates
-          setCurrentSubmissionId(unpaidSubmission._id);
+          if (unpaidSubmission && unpaidSubmission.cards) {
+            // Store the submission ID for updates
+            setCurrentSubmissionId(unpaidSubmission._id);
 
-          const unpaidCards = unpaidSubmission.cards
-            .filter(
-              (card) =>
-                (!card.status || card.status === "unpaid") && !card.isDeleted,
-            )
-            .map((card) => ({
-              ...card,
-              id: card.id || Date.now() + Math.random(),
-              status: "unpaid",
-              createdAt: card.createdAt || new Date().toISOString(),
-            }));
+            const unpaidCards = unpaidSubmission.cards
+              .filter(
+                (card) =>
+                  (!card.status || card.status === "unpaid") && !card.isDeleted,
+              )
+              .map((card) => ({
+                ...card,
+                id: card.id || Date.now() + Math.random(),
+                status: "unpaid",
+                createdAt: card.createdAt || new Date().toISOString(),
+              }));
 
-          setCards(unpaidCards);
-        } else {
-          // Fallback to sessionStorage if no unpaid submission
-          const cached = sessionStorageManager.getSubmissionForm();
-          if (cached && cached.cards) {
-            const cachedUnpaid = cached.cards.filter(
-              (card) =>
-                (!card.status || card.status === "unpaid") && !card.isDeleted,
-            );
-            setCards(cachedUnpaid);
+            setCards(unpaidCards);
+            setLoading(false);
+            return;
           }
+        }
+
+        // Fallback to sessionStorage if no unpaid submission
+        const cached = sessionStorageManager.getSubmissionForm();
+        if (cached && cached.cards) {
+          const cachedUnpaid = cached.cards.filter(
+            (card) =>
+              (!card.status || card.status === "unpaid") && !card.isDeleted,
+          );
+          setCards(cachedUnpaid);
         }
       } catch (error) {
         console.error("Error loading unpaid cards:", error);
@@ -81,7 +90,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
     };
 
     loadUnpaidCards();
-  }, [fetchSubmissions]);
+  }, []); // Only run once on mount
 
   const getUnpaidCards = (submission) =>
     (submission?.cards || []).filter(
@@ -308,17 +317,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
   };
 
   if (loading) {
-    return (
-      <div className="ng-app-shell ng-app-shell--dark add-cards-page">
-        <Header user={user} onLogout={onLogout} />
-        <Container>
-          <div className="ng-section">
-            <p className="ng-loading-screen__text">Loading cards...</p>
-          </div>
-        </Container>
-        <LandingFooter />
-      </div>
-    );
+    return <StackedCardsLoader />;
   }
 
   return (
