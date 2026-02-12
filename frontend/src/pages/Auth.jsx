@@ -47,7 +47,8 @@ const AuthPage = ({ mode = "login" }) => {
       [name]: value,
     }));
 
-    if (errors[name]) {
+    // Only clear field-specific errors, not the submit error
+    if (errors[name] && name !== 'submit') {
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
@@ -110,6 +111,9 @@ const AuthPage = ({ mode = "login" }) => {
         err.message || "Authentication failed"
       ).toLowerCase();
 
+      // Determine the error message to display
+      let displayError = "";
+
       // Check for specific error types
       if (
         errorMessage.includes("email") &&
@@ -117,55 +121,43 @@ const AuthPage = ({ mode = "login" }) => {
           errorMessage.includes("does not exist") ||
           errorMessage.includes("not exist"))
       ) {
-        setErrors({
-          submit:
-            "❌ Email not found. Please check your email or create a new account.",
-        });
+        displayError = "❌ Email not found. Please check your email or create a new account.";
       } else if (
         errorMessage.includes("password") &&
         (errorMessage.includes("incorrect") ||
           errorMessage.includes("invalid") ||
           errorMessage.includes("wrong"))
       ) {
-        setErrors({ submit: "❌ Incorrect password. Please try again." });
+        displayError = "❌ Incorrect password. Please try again.";
       } else if (
         errorMessage.includes("credentials") ||
         errorMessage.includes("unauthorized")
       ) {
-        setErrors({
-          submit:
-            "❌ Invalid email or password. Please check your credentials.",
-        });
+        displayError = "❌ Invalid email or password. Please check your credentials.";
       } else if (
         errorMessage.includes("email") &&
         errorMessage.includes("exists")
       ) {
-        setErrors({
-          submit: "❌ Email already registered. Please login instead.",
-        });
+        displayError = "❌ Email already registered. Please login instead.";
       } else if (
         errorMessage.includes("fetch") ||
         errorMessage.includes("network")
       ) {
-        setErrors({
-          submit:
-            "❌ Network error. Please check your connection and try again.",
-        });
+        displayError = "❌ Network error. Please check your connection and try again.";
       } else if (
         errorMessage.includes("500") ||
         errorMessage.includes("server")
       ) {
-        setErrors({
-          submit: "❌ Server error. Please try again later.",
-        });
+        displayError = "❌ Server error. Please try again later.";
       } else {
         // Always show some error message with the actual backend message
-        setErrors({
-          submit: `❌ ${err.message || "Authentication failed. Please try again."}`,
-        });
+        displayError = `❌ ${err.message || "Authentication failed. Please try again."}`;
       }
 
-      console.error("[Auth] Error displayed to user:", errors.submit);
+      console.error("[Auth] Displaying error to user:", displayError);
+      
+      // Set the error in state to display in UI
+      setErrors({ submit: displayError });
 
       // Ensure we stop loading and don't proceed
       return;
@@ -179,8 +171,28 @@ const AuthPage = ({ mode = "login" }) => {
           {isRegister ? "CREATE ACCOUNT" : "LOGIN"}
         </h1>
 
+        {/* Debug: Show if we have any errors */}
+        {console.log("[Auth] Current errors state:", errors)}
+        
+        {/* Error display - Multiple methods to ensure visibility */}
         {errors.submit && (
-          <div className="auth-card__alert">{errors.submit}</div>
+          <>
+            <div className="auth-card__alert" role="alert" style={{
+              background: 'rgba(239, 68, 68, 0.4)',
+              border: '3px solid #ef4444',
+              color: '#ffffff',
+              padding: '1rem',
+              borderRadius: '0.85rem',
+              marginBottom: '1.5rem',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              textAlign: 'center',
+              display: 'block',
+              zIndex: 1000
+            }}>
+              {errors.submit}
+            </div>
+          </>
         )}
 
         <form onSubmit={handleSubmit} className="auth-form">
