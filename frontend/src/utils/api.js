@@ -1,7 +1,4 @@
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000" ||
-  "https://nice-grading.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export const apiCall = async (endpoint, options = {}) => {
   const url = `${API_URL}${endpoint}`;

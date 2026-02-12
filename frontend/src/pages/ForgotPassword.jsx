@@ -13,21 +13,20 @@ export const ForgotPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess(false);
     setLoading(true);
 
     try {
-      await apiCall("/api/auth/forgot-password", {
+      const response = await apiCall("/api/auth/forgot-password", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ email }),
       });
 
       setSuccess(true);
       setEmail("");
     } catch (err) {
-      setError(err.message || "An error occurred. Please try again.");
+      console.error("Forgot password error:", err);
+      setError(err.message || "Failed to send reset link. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -5,9 +5,10 @@ import { useAuth } from "../hooks/useAuth.js";
 
 const AuthPage = ({ mode = "login" }) => {
   const navigate = useNavigate();
-  const { login, register, loading, error: authError } = useAuth();
+  const { login, register } = useAuth();
   const [errors, setErrors] = useState({});
   const [isRegister, setIsRegister] = useState(mode === "register");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -29,6 +30,10 @@ const AuthPage = ({ mode = "login" }) => {
 
     if (isRegister && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      console.warn("[Auth] Validation failed:", newErrors);
     }
 
     setErrors(newErrors);
@@ -53,12 +58,23 @@ const AuthPage = ({ mode = "login" }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
 
+    // Clear previous errors
+    setErrors({});
+
+    // Validate form
     if (!validateForm()) {
       return;
     }
 
+    // Start loading state
+    setIsSubmitting(true);
+
     try {
+      console.log(
+        `[Auth] Attempting ${isRegister ? "registration" : "login"}...`,
+      );
       let user;
       if (isRegister) {
         user = await register(formData.name, formData.email, formData.password);
@@ -66,24 +82,93 @@ const AuthPage = ({ mode = "login" }) => {
         user = await login(formData.email, formData.password);
       }
 
-      if (user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/dashboard");
+      console.log("[Auth] Success:", user);
+      // Only navigate on successful authentication
+      if (user && user.role) {
+        // Small delay to show success state before navigation
+        setTimeout(() => {
+          if (user.role === "admin") {
+            navigate("/admin", { replace: true });
+          } else {
+            navigate("/dashboard", { replace: true });
+          }
+        }, 100);
       }
     } catch (err) {
-      const errorMessage = err.message || "An error occurred.";
+      // Stop loading immediately on error
+      setIsSubmitting(false);
 
-      if (errorMessage.toLowerCase().includes("email does not exist")) {
-        setErrors({ email: "Email does not exist." });
-      } else if (
-        errorMessage.toLowerCase().includes("incorrect password") ||
-        errorMessage.toLowerCase().includes("invalid password")
+      // Stay on page and show error - do NOT navigate
+      console.error(
+        `[Auth] ${isRegister ? "Registration" : "Login"} failed:`,
+        err,
+      );
+      console.error("[Auth] Error message:", err.message);
+      console.error("[Auth] Error details:", err);
+
+      const errorMessage = (
+        err.message || "Authentication failed"
+      ).toLowerCase();
+
+      // Check for specific error types
+      if (
+        errorMessage.includes("email") &&
+        (errorMessage.includes("not found") ||
+          errorMessage.includes("does not exist") ||
+          errorMessage.includes("not exist"))
       ) {
-        setErrors({ password: "Incorrect password." });
+        setErrors({
+          submit:
+            "❌ Email not found. Please check your email or create a new account.",
+        });
+      } else if (
+        errorMessage.includes("password") &&
+        (errorMessage.includes("incorrect") ||
+          errorMessage.includes("invalid") ||
+          errorMessage.includes("wrong"))
+      ) {
+        setErrors({ submit: "❌ Incorrect password. Please try again." });
+      } else if (
+        errorMessage.includes("credentials") ||
+        errorMessage.includes("unauthorized")
+      ) {
+        setErrors({
+          submit:
+            "❌ Invalid email or password. Please check your credentials.",
+        });
+      } else if (
+        errorMessage.includes("email") &&
+        errorMessage.includes("exists")
+      ) {
+        setErrors({
+          submit: "❌ Email already registered. Please login instead.",
+        });
+      } else if (
+        errorMessage.includes("fetch") ||
+        errorMessage.includes("network")
+      ) {
+        setErrors({
+          submit:
+            "❌ Network error. Please check your connection and try again.",
+        });
+      } else if (
+        errorMessage.includes("500") ||
+        errorMessage.includes("server")
+      ) {
+        setErrors({
+          submit: "❌ Server error. Please try again later.",
+        });
       } else {
-        setErrors({ submit: errorMessage });
+        // Always show some error message with the actual backend message
+        setErrors({
+          submit: `❌ ${err.message || "Authentication failed. Please try again."}`,
+        });
       }
+
+      console.error("[Auth] Error displayed to user:", errors.submit);
+
+      // Ensure we stop loading and don't proceed
+      return;
     }
   };
 
@@ -108,7 +193,7 @@ const AuthPage = ({ mode = "login" }) => {
               value={formData.name}
               onChange={handleInputChange}
               error={errors.name}
-              disabled={loading}
+              disabled={isSubmitting}
             />
           )}
 
@@ -123,7 +208,7 @@ const AuthPage = ({ mode = "login" }) => {
             value={formData.email}
             onChange={handleInputChange}
             error={errors.email}
-            disabled={loading}
+            disabled={isSubmitting}
           />
 
           <Input
@@ -135,7 +220,7 @@ const AuthPage = ({ mode = "login" }) => {
             value={formData.password}
             onChange={handleInputChange}
             error={errors.password}
-            disabled={loading}
+            disabled={isSubmitting}
           />
 
           {isRegister && (
@@ -148,7 +233,7 @@ const AuthPage = ({ mode = "login" }) => {
               value={formData.confirmPassword}
               onChange={handleInputChange}
               error={errors.confirmPassword}
-              disabled={loading}
+              disabled={isSubmitting}
             />
           )}
 
@@ -156,9 +241,13 @@ const AuthPage = ({ mode = "login" }) => {
             variant="primary"
             className="ng-button--block auth-card__cta"
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
           >
-            {isRegister ? "CREATE ACCOUNT" : "LOGIN"}
+            {isSubmitting
+              ? "PLEASE WAIT..."
+              : isRegister
+                ? "CREATE ACCOUNT"
+                : "LOGIN"}
           </Button>
         </form>
 
