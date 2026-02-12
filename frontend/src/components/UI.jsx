@@ -1,3 +1,5 @@
+import { usePasswordVisibility } from "../hooks/usePasswordVisibility.jsx";
+
 const combine = (...classes) => classes.filter(Boolean).join(" ");
 
 export const Button = ({
@@ -36,6 +38,63 @@ export const Input = ({ label, error, className = "", ...props }) => {
         )}
         {...props}
       />
+      {error && <p className="ng-field__error">{error}</p>}
+    </div>
+  );
+};
+
+export const PasswordInput = ({
+  label,
+  error,
+  className = "",
+  value = "",
+  onChange,
+  name,
+  disabled,
+  ...props
+}) => {
+  const { isPasswordVisible, togglePasswordVisibility } =
+    usePasswordVisibility();
+
+  const handleToggle = (e) => {
+    e.preventDefault();
+    togglePasswordVisibility();
+  };
+
+  return (
+    <div className={combine("ng-field", className)}>
+      {label && <label className="ng-field__label">{label}</label>}
+      <div className="ng-field__password-wrapper">
+        <input
+          type={isPasswordVisible ? "text" : "password"}
+          name={name}
+          className={combine(
+            "ng-field__control",
+            error ? "ng-field__control--error" : "",
+          )}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          {...props}
+        />
+        <button
+          type="button"
+          className="ng-field__password-toggle"
+          onClick={handleToggle}
+          aria-label={isPasswordVisible ? "Hide password" : "Show password"}
+          disabled={disabled}
+        >
+          <span
+            className={combine(
+              "ng-field__password-icon",
+              isPasswordVisible
+                ? "ng-field__password-icon--visible"
+                : "ng-field__password-icon--hidden",
+            )}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
       {error && <p className="ng-field__error">{error}</p>}
     </div>
   );

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input } from "../components/UI.jsx";
+import { Button, Input, PasswordInput } from "../components/UI.jsx";
 import { useAuth } from "../hooks/useAuth.js";
+import { PasswordVisibilityProvider } from "../hooks/usePasswordVisibility.jsx";
 
 const AuthPage = ({ mode = "login" }) => {
   const navigate = useNavigate();
@@ -229,8 +230,7 @@ const AuthPage = ({ mode = "login" }) => {
             disabled={isSubmitting}
           />
 
-          <Input
-            type="password"
+          <PasswordInput
             name="password"
             label={isRegister ? "PASSWORD" : ""}
             placeholder="Password"
@@ -242,8 +242,7 @@ const AuthPage = ({ mode = "login" }) => {
           />
 
           {isRegister && (
-            <Input
-              type="password"
+            <PasswordInput
               name="confirmPassword"
               label="CONFIRM PASSWORD"
               placeholder="Confirm password"
@@ -290,5 +289,14 @@ const AuthPage = ({ mode = "login" }) => {
   );
 };
 
-export const LoginPage = () => <AuthPage mode="login" />;
-export const RegisterPage = () => <AuthPage mode="register" />;
+export const LoginPage = () => (
+  <PasswordVisibilityProvider>
+    <AuthPage mode="login" />
+  </PasswordVisibilityProvider>
+);
+
+export const RegisterPage = () => (
+  <PasswordVisibilityProvider>
+    <AuthPage mode="register" />
+  </PasswordVisibilityProvider>
+);
