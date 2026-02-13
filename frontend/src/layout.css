@@ -1483,13 +1483,16 @@
   overflow: visible;
 }
 
-/* Make admin panel table scrollable on desktop only */
-@media (min-width: 1025px) {
-  .admin-panel .ng-table-wrapper {
-    max-height: 600px;
-    overflow-y: auto;
-    overflow-x: auto;
-  }
+.admin-panel__content {
+  height: auto;
+  overflow-y: visible;
+  overflow-x: visible;
+}
+
+.admin-panel .ng-table-wrapper {
+  height: auto;
+  max-height: none;
+  overflow-y: hidden;
 }
 
 .admin-panel h2 {

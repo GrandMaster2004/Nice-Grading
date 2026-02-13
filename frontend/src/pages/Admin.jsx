@@ -348,10 +348,9 @@ export const AdminPage = ({ user, onLogout }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
   const [updateError, setUpdateError] = useState(null);
-  const [initialLoad, setInitialLoad] = useState(true);
   const submissionsSectionRef = useRef(null);
 
-  // Fetch submissions and analytics on mount ONLY (not on filter change)
+  // Fetch submissions and analytics on mount only
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -359,33 +358,11 @@ export const AdminPage = ({ user, onLogout }) => {
         await fetchAnalytics();
       } catch (err) {
         console.error("Failed to load admin data:", err);
-      } finally {
-        setInitialLoad(false);
       }
     };
 
-    if (initialLoad) {
-      loadInitialData();
-    }
+    loadInitialData();
   }, []);
-
-  // Fetch with filter changes (after initial load)
-  useEffect(() => {
-    if (!initialLoad) {
-      // Extract status from unified filter for backend pagination
-      const statusValues = [
-        "submitted",
-        "in_review",
-        "grading",
-        "completed",
-        "shipped",
-      ];
-      const statusToSend = statusValues.includes(unifiedFilter)
-        ? unifiedFilter
-        : null;
-      fetchSubmissions(1, statusToSend);
-    }
-  }, [unifiedFilter, initialLoad, fetchSubmissions]);
 
   const memoizedSubmissions = useMemo(() => {
     let filtered = submissions || [];
