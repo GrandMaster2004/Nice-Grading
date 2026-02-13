@@ -148,6 +148,12 @@
   overflow-wrap: break-word;
 }
 
+.required-asterisk {
+  color: #ef4444;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
 @media (max-width: 640px) {
   .ng-field__label {
     font-size: 0.7rem;

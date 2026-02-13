@@ -27,10 +27,21 @@ export const Button = ({
   );
 };
 
-export const Input = ({ label, error, className = "", ...props }) => {
+export const Input = ({
+  label,
+  error,
+  required = false,
+  className = "",
+  ...props
+}) => {
   return (
     <div className={combine("ng-field", className)}>
-      {label && <label className="ng-field__label">{label}</label>}
+      {label && (
+        <label className="ng-field__label">
+          {label}
+          {required && <span className="required-asterisk">*</span>}
+        </label>
+      )}
       <input
         className={combine(
           "ng-field__control",
@@ -46,6 +57,7 @@ export const Input = ({ label, error, className = "", ...props }) => {
 export const PasswordInput = ({
   label,
   error,
+  required = false,
   className = "",
   value = "",
   onChange,
@@ -63,7 +75,12 @@ export const PasswordInput = ({
 
   return (
     <div className={combine("ng-field", className)}>
-      {label && <label className="ng-field__label">{label}</label>}
+      {label && (
+        <label className="ng-field__label">
+          {label}
+          {required && <span className="required-asterisk">*</span>}
+        </label>
+      )}
       <div className="ng-field__password-wrapper">
         <input
           type={isPasswordVisible ? "text" : "password"}
@@ -100,10 +117,22 @@ export const PasswordInput = ({
   );
 };
 
-export const Select = ({ label, error, options, className = "", ...props }) => {
+export const Select = ({
+  label,
+  error,
+  required = false,
+  options,
+  className = "",
+  ...props
+}) => {
   return (
     <div className={combine("ng-field", className)}>
-      {label && <label className="ng-field__label">{label}</label>}
+      {label && (
+        <label className="ng-field__label">
+          {label}
+          {required && <span className="required-asterisk">*</span>}
+        </label>
+      )}
       <select
         className={combine(
           "ng-field__control",

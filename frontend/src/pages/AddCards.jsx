@@ -339,6 +339,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
                       handleFieldChange("player", e.target.value)
                     }
                     error={errors.player}
+                    required={true}
                     onBlur={() => {
                       const playerErrors = {};
                       if (cardForm.player.length > 0) {
@@ -358,6 +359,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
                     value={cardForm.year}
                     onChange={(e) => handleFieldChange("year", e.target.value)}
                     error={errors.year}
+                    required={true}
                     onBlur={() => {
                       const yearErrors = {};
                       if (cardForm.year.length > 0) {
@@ -374,6 +376,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
                     value={cardForm.set}
                     onChange={(e) => handleFieldChange("set", e.target.value)}
                     error={errors.set}
+                    required={true}
                   />
                   <Input
                     label="CARD #"
@@ -383,6 +386,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
                       handleFieldChange("cardNumber", e.target.value)
                     }
                     error={errors.cardNumber}
+                    required={true}
                     onBlur={() => {
                       const cardErrors = {};
                       if (cardForm.cardNumber.length > 0) {
