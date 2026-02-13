@@ -138,6 +138,15 @@ function App() {
           />
 
           <Route
+            path="/submission-review/:submissionId"
+            element={
+              <ProtectedRoute>
+                <SubmissionReviewPage user={user} onLogout={logout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/submission-review"
             element={
               <ProtectedRoute>

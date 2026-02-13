@@ -63,6 +63,16 @@ export const useSubmissions = () => {
     }
   }, []);
 
+  const fetchSubmissionById = useCallback(async (submissionId) => {
+    try {
+      const data = await apiCall(`/api/submissions/${submissionId}`);
+      return data.submission || null;
+    } catch (err) {
+      console.error("Error fetching submission by ID:", err);
+      throw err;
+    }
+  }, []);
+
   const fetchDashboardMetrics = useCallback(async () => {
     // Fetch pre-calculated metrics from backend
     try {
@@ -129,6 +139,7 @@ export const useSubmissions = () => {
     fetchSubmissions,
     fetchVaultSubmissions,
     fetchPaidSubmissions,
+    fetchSubmissionById,
     fetchDashboardMetrics,
     createSubmission,
     updateSubmission,

@@ -801,16 +801,33 @@
   z-index: 50;
 }
 
-.ng-table__row:hover {
-  background: rgba(17, 24, 39, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+/* Clickable row with glass hover effect */
+.ng-table__row--clickable {
+  cursor: pointer;
+  transition:
+    background 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s ease,
+    backdrop-filter 0.25s ease;
+}
+
+.ng-table__row--clickable:hover {
+  /* background: rgba(11, 11, 11, 0.12); */
+  border: 1px solid rgba(13, 13, 13, 0.18);
+  transform: translateY(-4px) translateZ(0);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.4),
+    0 0 35px rgba(176, 255, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* .ng-table__row:hover {
   transform: translateY(-1px);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.3),
     0 0 32px rgba(176, 255, 0, 0.08),
     inset 0 1px 0 rgba(176, 255, 0, 0.08);
-}
+} */
 
 .ng-table__cell {
   padding: 0.85rem 1rem;
@@ -4008,6 +4025,241 @@
   .payment-actions__button {
     width: 100%;
   }
+}
+
+/* Vault Filter Section Styles */
+.vault-filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.vault-filter-section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.vault-filter-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.7);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vault-filter-input,
+.vault-filter-date {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+  color: #111111;
+  font-size: 0.95rem;
+  font-family: var(--font-base);
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 2px 8px rgba(90, 96, 120, 0.08),
+    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.vault-filter-input:hover,
+.vault-filter-date:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: #ffffff;
+  box-shadow:
+    0 4px 12px rgba(90, 96, 120, 0.12),
+    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.vault-filter-input:focus,
+.vault-filter-date:focus {
+  outline: none;
+  border-color: rgba(176, 255, 0, 0.5);
+  background: #ffffff;
+  box-shadow:
+    0 4px 16px rgba(90, 96, 120, 0.15),
+    0 0 0 3px rgba(176, 255, 0, 0.1),
+    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.vault-filter-input::placeholder {
+  color: rgba(17, 24, 39, 0.5);
+}
+
+/* Vault Filter Dropdown */
+.vault-filter-dropdown {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+}
+
+.vault-filter-dropdown__button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+  color: #111111;
+  font-size: 0.95rem;
+  font-family: var(--font-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow:
+    0 2px 8px rgba(90, 96, 120, 0.08),
+    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.vault-filter-dropdown__button:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: #ffffff;
+  box-shadow:
+    0 4px 12px rgba(90, 96, 120, 0.12),
+    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.vault-filter-dropdown__button:focus {
+  outline: none;
+  border-color: rgba(176, 255, 0, 0.5);
+  box-shadow:
+    0 4px 16px rgba(90, 96, 120, 0.15),
+    0 0 0 3px rgba(176, 255, 0, 0.1),
+    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.vault-filter-dropdown__label {
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vault-filter-dropdown__arrow {
+  margin-left: 0.5rem;
+  font-size: 0.7rem;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  color: rgba(17, 24, 39, 0.6);
+}
+
+.vault-filter-dropdown__arrow--open {
+  transform: rotate(-180deg);
+}
+
+.vault-filter-dropdown__menu {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 1rem;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 240px;
+  animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vault-filter-dropdown__menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vault-filter-dropdown__menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vault-filter-dropdown__menu::-webkit-scrollbar-thumb {
+  background: rgba(176, 255, 0, 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.vault-filter-dropdown__menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(176, 255, 0, 0.5);
+}
+
+.vault-filter-dropdown__item {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: #111111;
+  font-size: 0.95rem;
+  font-family: var(--font-base);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.vault-filter-dropdown__item:hover {
+  background: rgba(176, 255, 0, 0.08);
+}
+
+.vault-filter-dropdown__item--selected {
+  background: rgba(176, 255, 0, 0.12);
+  font-weight: 600;
+  color: #111111;
+}
+
+.vault-filter-dropdown__item--selected::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #b0ff00;
+  border-radius: 0 2px 2px 0;
+}
+
+.vault-filter-dropdown__item-text {
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vault-filter-dropdown__item-checkmark {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: #b0ff00;
+  font-weight: 700;
+  pointer-events: none;
+  flex-shrink: 0;
 }
 
 /* Auth + Payment helper */

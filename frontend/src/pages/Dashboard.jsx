@@ -71,7 +71,7 @@ const DashboardSummary = ({ summary, paymentSummary }) => {
 };
 
 // Memoized table row component
-const SubmissionRow = ({ submission }) => {
+const SubmissionRow = ({ submission, navigate }) => {
   const statusSlug = (value) =>
     value?.toLowerCase().replace(/\s+/g, "-") || "unknown";
 
@@ -97,8 +97,17 @@ const SubmissionRow = ({ submission }) => {
 
   const submissionStatus = statusMap[submission.submissionStatus] || "Unknown";
 
+  const handleRowClick = () => {
+    navigate(`/submission-review/${submission._id}`, {
+      state: { fromVault: true },
+    });
+  };
+
   return (
-    <tr className="ng-table__row">
+    <tr
+      className="ng-table__row ng-table__row--clickable"
+      onClick={handleRowClick}
+    >
       <td className="ng-table__cell">{submission._id.slice(0, 8)}</td>
       <td className="ng-table__cell">
         {new Date(submission.createdAt).toLocaleDateString()}
@@ -118,6 +127,70 @@ const SubmissionRow = ({ submission }) => {
   );
 };
 
+// Custom Dropdown Component for Status Filter
+const StatusFilterDropdown = ({ selectedStatus, onStatusChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const filterOptions = [
+    { value: "all", label: "All" },
+    { value: "submitted", label: "Submitted" },
+    { value: "in_review", label: "In Review" },
+    { value: "grading", label: "Grading" },
+    { value: "completed", label: "Completed" },
+    { value: "shipped", label: "Shipped" },
+  ];
+
+  const selectedLabel =
+    filterOptions.find((opt) => opt.value === selectedStatus)?.label || "All";
+
+  const handleSelect = (value) => {
+    onStatusChange(value);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="vault-filter-dropdown">
+      <button
+        className="vault-filter-dropdown__button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Filter by status"
+      >
+        <span className="vault-filter-dropdown__label">{selectedLabel}</span>
+        <span
+          className={`vault-filter-dropdown__arrow ${
+            isOpen ? "vault-filter-dropdown__arrow--open" : ""
+          }`}
+        >
+          ▼
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="vault-filter-dropdown__menu">
+          {filterOptions.map((option) => (
+            <button
+              key={option.value}
+              className={`vault-filter-dropdown__item ${
+                selectedStatus === option.value
+                  ? "vault-filter-dropdown__item--selected"
+                  : ""
+              }`}
+              onClick={() => handleSelect(option.value)}
+            >
+              <span className="vault-filter-dropdown__item-text">
+                {option.label}
+              </span>
+              {selectedStatus === option.value && (
+                <span className="vault-filter-dropdown__item-checkmark">✓</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const DashboardPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const {
@@ -132,6 +205,9 @@ export const DashboardPage = ({ user, onLogout }) => {
   const [paidError, setPaidError] = useState(null);
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedDate, setSelectedDate] = useState("");
   const hasMountedRef = useRef(false);
 
   // Fetch both vault and paid submissions on component mount (once only)
@@ -281,6 +357,41 @@ export const DashboardPage = ({ user, onLogout }) => {
     return cards;
   }, [memoizedSubmissions]);
 
+  const filteredSubmissions = useMemo(() => {
+    let result = [...memoizedPaidSubmissions];
+
+    // Apply search filter (submission ID or customer name)
+    if (searchQuery.trim()) {
+      const query = searchQuery.trim().toLowerCase();
+      result = result.filter((submission) => {
+        const submissionId = submission._id.slice(0, 8).toLowerCase();
+        const customerName = (submission.userId?.name || "").toLowerCase();
+        return submissionId.includes(query) || customerName.includes(query);
+      });
+    }
+
+    // Apply status filter
+    if (selectedStatus !== "all") {
+      result = result.filter(
+        (submission) => submission.submissionStatus === selectedStatus,
+      );
+    }
+
+    // Apply date picker filter
+    if (selectedDate) {
+      const [year, month, day] = selectedDate.split("-");
+      const filterDateStr = `${year}-${month}-${day}`;
+      result = result.filter((submission) => {
+        const submissionDateStr = new Date(submission.createdAt)
+          .toISOString()
+          .split("T")[0];
+        return submissionDateStr === filterDateStr;
+      });
+    }
+
+    return result;
+  }, [memoizedPaidSubmissions, searchQuery, selectedStatus, selectedDate]);
+
   return (
     <div className="ng-app-shell ng-app-shell--dark dashboard-page">
       <Header user={user} onLogout={onLogout} />
@@ -324,17 +435,20 @@ export const DashboardPage = ({ user, onLogout }) => {
                                 Loading submissions...
                               </td>
                             </tr>
-                          ) : memoizedPaidSubmissions.length === 0 ? (
+                          ) : filteredSubmissions.length === 0 ? (
                             <tr className="ng-table__row">
                               <td className="ng-table__cell" colSpan={5}>
-                                No completed submissions yet.
+                                {memoizedPaidSubmissions.length === 0
+                                  ? "No completed submissions yet."
+                                  : "No submissions match your filters."}
                               </td>
                             </tr>
                           ) : (
-                            memoizedPaidSubmissions.map((submission) => (
+                            filteredSubmissions.map((submission) => (
                               <SubmissionRow
                                 key={submission._id}
                                 submission={submission}
+                                navigate={navigate}
                               />
                             ))
                           )}
@@ -422,6 +536,45 @@ export const DashboardPage = ({ user, onLogout }) => {
                   </div>
                 </Card>
               )}
+
+              <Card className="dashboard-action-panel">
+                <h2>FILTER SUBMISSIONS</h2>
+                <p className="dashboard-action-panel__copy">
+                  Filter the submissions table below.
+                </p>
+
+                <div className="vault-filter-panel">
+                  <div className="vault-filter-section">
+                    <input
+                      type="text"
+                      className="vault-filter-input"
+                      placeholder="Search by Submission ID or Customer Name"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="vault-filter-section">
+                    <label className="vault-filter-label">
+                      Filter by Status
+                    </label>
+                    <StatusFilterDropdown
+                      selectedStatus={selectedStatus}
+                      onStatusChange={setSelectedStatus}
+                    />
+                  </div>
+
+                  <div className="vault-filter-section">
+                    <label className="vault-filter-label">Filter by Date</label>
+                    <input
+                      type="date"
+                      className="vault-filter-date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </Card>
             </aside>
           </div>
         </div>

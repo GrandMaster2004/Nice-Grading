@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { Button, Card, StackedCardsLoader } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
 import { LandingFooter } from "../components/LandingChrome.jsx";
@@ -8,90 +8,143 @@ import { useSubmissions } from "../hooks/useSubmissions.js";
 
 export const SubmissionReviewPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { submissionId } = useParams();
   const [formData, setFormData] = useState(null);
   const [pricing, setPricing] = useState(null);
-  const hasMountedRef = useRef(false);
-  const { fetchSubmissions } = useSubmissions();
+  const [notFound, setNotFound] = useState(false);
+  const lastLoadedSubmissionRef = useRef(null);
+  const { fetchSubmissions, fetchSubmissionById } = useSubmissions();
+  const isDetailView = Boolean(submissionId);
+
+  const filterCards = (cards, { unpaidOnly } = {}) =>
+    (cards || []).filter(
+      (card) =>
+        !card?.isDeleted &&
+        (!unpaidOnly || !card.status || card.status === "unpaid"),
+    );
+
+  const computePricing = (submissionPricing, cards = []) => {
+    if (submissionPricing) {
+      return submissionPricing;
+    }
+
+    const basePrice = cards.reduce((sum, card) => sum + (card.price || 0), 0);
+    const processingFee = 0;
+    return {
+      basePrice,
+      processingFee,
+      total: basePrice + processingFee,
+    };
+  };
+
+  const applySubmissionPayload = (
+    submission,
+    { enforceUnpaidCards = !isDetailView } = {},
+  ) => {
+    if (!submission) {
+      return false;
+    }
+
+    const visibleCards = filterCards(submission.cards, {
+      unpaidOnly: enforceUnpaidCards,
+    });
+
+    if (enforceUnpaidCards && visibleCards.length === 0) {
+      navigate("/dashboard");
+      return false;
+    }
+
+    setFormData({
+      ...submission,
+      cards: visibleCards,
+      cardCount: visibleCards.length,
+    });
+    setPricing(computePricing(submission.pricing, visibleCards));
+    return true;
+  };
+
+  const handleBackNavigation = () => {
+    navigate("/dashboard");
+  };
 
   useEffect(() => {
-    if (hasMountedRef.current) return;
-    hasMountedRef.current = true;
+    if (lastLoadedSubmissionRef.current === submissionId) return;
+    lastLoadedSubmissionRef.current = submissionId;
+    setFormData(null);
+    setNotFound(false);
 
     const loadSubmission = async () => {
       try {
-        // Try cache first (skipCache = false uses cache)
+        if (submissionId) {
+          const submission = await fetchSubmissionById(submissionId);
+
+          if (
+            !applySubmissionPayload(submission, { enforceUnpaidCards: false })
+          ) {
+            return;
+          }
+
+          return;
+        }
+
+        if (location.state?.submission) {
+          if (
+            applySubmissionPayload(location.state.submission, {
+              enforceUnpaidCards: true,
+            })
+          ) {
+            return;
+          }
+        }
+
+        if (location.state?.cards) {
+          if (
+            applySubmissionPayload(
+              {
+                cards: location.state.cards,
+                cardCount:
+                  location.state.cardCount || location.state.cards.length,
+                pricing: location.state.pricing || null,
+                serviceTier: location.state.serviceTier,
+              },
+              { enforceUnpaidCards: true },
+            )
+          ) {
+            return;
+          }
+        }
+
         const submissions = await fetchSubmissions(false);
         const unpaidSubmission = submissions.find(
           (sub) => sub.paymentStatus !== "paid",
         );
 
-        if (unpaidSubmission && unpaidSubmission.cards) {
-          const unpaidCards = (unpaidSubmission.cards || []).filter(
-            (card) =>
-              (!card.status || card.status === "unpaid") && !card.isDeleted,
-          );
-
-          if (unpaidCards.length === 0) {
-            navigate("/dashboard");
-            return;
-          }
-
-          setFormData({
-            ...unpaidSubmission,
-            cards: unpaidCards,
-            cardCount: unpaidCards.length,
-          });
-
-          const basePrice = unpaidCards.reduce(
-            (sum, card) => sum + (card.price || 0),
-            0,
-          );
-          const processingFee = 0;
-          setPricing({
-            basePrice,
-            processingFee,
-            total: basePrice + processingFee,
-          });
+        if (
+          applySubmissionPayload(unpaidSubmission, { enforceUnpaidCards: true })
+        ) {
           return;
         }
       } catch (error) {
         console.error("Error loading submission review:", error);
       }
 
-      // Fallback to sessionStorage
       const cached = sessionStorageManager.getSubmissionForm();
-      if (cached) {
-        const unpaidCards = (cached.cards || []).filter(
-          (card) =>
-            (!card.status || card.status === "unpaid") && !card.isDeleted,
-        );
-
-        if (unpaidCards.length === 0) {
-          navigate("/dashboard");
-          return;
-        }
-
-        setFormData({
-          ...cached,
-          cards: unpaidCards,
-          cardCount: unpaidCards.length,
-        });
-
-        const basePrice = unpaidCards.reduce(
-          (sum, card) => sum + (card.price || 0),
-          0,
-        );
-        const processingFee = 0;
-        setPricing({
-          basePrice,
-          processingFee,
-          total: basePrice + processingFee,
-        });
+      if (
+        applySubmissionPayload(cached, {
+          enforceUnpaidCards: true,
+        })
+      ) {
+        return;
       }
+
+      setNotFound(true);
     };
 
     loadSubmission();
-  }, []); // Only run once on mount
+  }, [submissionId]);
+
+  const isPaidSubmission = formData?.paymentStatus?.toLowerCase() === "paid";
 
   const handleProceedToPayment = () => {
     navigate("/payment", { state: { formData, pricing } });
@@ -101,6 +154,33 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
     sessionStorageManager.removeSubmissionForm();
     navigate("/dashboard");
   };
+
+  if (notFound) {
+    return (
+      <div className="ng-app-shell ng-app-shell--dark review-page">
+        <Header user={user} onLogout={onLogout} />
+        <Container>
+          <div className="ng-section">
+            <div className="review-container" style={{ textAlign: "center" }}>
+              <h1 className="ng-page-title">Submission Not Found</h1>
+              <p style={{ marginBottom: "2rem" }}>
+                The submission you're looking for doesn't exist or has been
+                deleted.
+              </p>
+              <Button
+                variant="secondary"
+                className="review-actions__button"
+                onClick={handleBackNavigation}
+              >
+                ← BACK TO DASHBOARD
+              </Button>
+            </div>
+          </div>
+        </Container>
+        <LandingFooter />
+      </div>
+    );
+  }
 
   if (!formData) {
     return <StackedCardsLoader />;
@@ -180,20 +260,32 @@ export const SubmissionReviewPage = ({ user, onLogout }) => {
             </div>
 
             <div className="review-actions">
-              <Button
-                variant="primary"
-                onClick={handleProceedToPayment}
-                className="review-actions__button"
-              >
-                PROCEED TO PAYMENT →
-              </Button>
-              <Button
-                variant="secondary"
-                className="review-actions__button"
-                onClick={handleSaveAndExit}
-              >
-                SAVE AND EXIT
-              </Button>
+              {isPaidSubmission ? (
+                <Button
+                  variant="secondary"
+                  className="review-actions__button"
+                  onClick={handleBackNavigation}
+                >
+                  ← BACK
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="secondary"
+                    className="review-actions__button"
+                    onClick={handleSaveAndExit}
+                  >
+                    SAVE AND EXIT
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleProceedToPayment}
+                    className="review-actions__button"
+                  >
+                    CONTINUE TO REVIEW →
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

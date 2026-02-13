@@ -266,7 +266,7 @@ export const AddCardsPage = ({ user, onLogout }) => {
     return cards.length > 0;
   }, [cards.length]);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!canContinue) {
       setErrors((prev) => ({
         ...prev,
@@ -275,6 +275,31 @@ export const AddCardsPage = ({ user, onLogout }) => {
       return;
     }
 
+    let submissionIdToUse = currentSubmissionId;
+
+    if (!submissionIdToUse) {
+      try {
+        const savedSubmission = await persistCards(cards, cards.length);
+        if (savedSubmission?._id) {
+          submissionIdToUse = savedSubmission._id;
+          setCurrentSubmissionId(savedSubmission._id);
+          syncCardsFromSubmission(savedSubmission);
+        }
+      } catch (error) {
+        console.error("Error preparing submission for review:", error);
+        setErrors((prev) => ({
+          ...prev,
+          submit: "Failed to prepare submission. Please try again.",
+        }));
+      }
+    }
+
+    if (submissionIdToUse) {
+      navigate(`/submission-review/${submissionIdToUse}`);
+      return;
+    }
+
+    // Legacy fallback: rely on cached data when submission isn't persisted yet
     sessionStorageManager.setSubmissionForm({
       cards,
       cardCount: cards.length,
