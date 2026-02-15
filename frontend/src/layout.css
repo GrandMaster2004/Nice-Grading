@@ -1931,10 +1931,7 @@ body {
 }
 
 .admin-status-dropdown__menu {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
-  right: 0;
+  position: fixed;
   background: rgba(255, 255, 255, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 1rem;
@@ -1948,7 +1945,6 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 240px;
-  min-width: 100%;
   animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);

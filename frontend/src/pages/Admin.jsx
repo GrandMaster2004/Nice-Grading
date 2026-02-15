@@ -7,6 +7,7 @@ import {
   createContext,
   useContext,
 } from "react";
+import ReactDOM from "react-dom";
 import { Button, Card, Select, LoadingSkeleton } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
 import { LandingFooter } from "../components/LandingChrome.jsx";
@@ -207,6 +208,34 @@ const StatusSelectDropdown = ({
     }
   };
 
+  const [menuPosition, setMenuPosition] = React.useState({ top: 0, left: 0 });
+  const menuRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (isThisOpen && dropdownRef.current && menuRef.current) {
+      const buttonRect = dropdownRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: buttonRect.bottom + 8,
+        left: buttonRect.left,
+        width: buttonRect.width,
+      });
+    }
+  }, [isThisOpen]);
+
+  React.useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target) && menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenDropdown(null);
+        onOpenChange?.(false);
+      }
+    };
+
+    if (isThisOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isThisOpen, onOpenChange]);
+
   return (
     <div
       ref={dropdownRef}
@@ -232,29 +261,40 @@ const StatusSelectDropdown = ({
         </span>
       </button>
 
-      {isThisOpen && (
-        <div className="admin-status-dropdown__menu">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => handleSelect(opt.value)}
-              className={`admin-status-dropdown__item ${
-                value === opt.value
-                  ? "admin-status-dropdown__item--selected"
-                  : ""
-              }`}
-            >
-              <span className="admin-status-dropdown__item-text">
-                {opt.label}
-              </span>
-              {value === opt.value && (
-                <span className="admin-status-dropdown__item-checkmark">✓</span>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+      {isThisOpen && typeof document !== "undefined" &&
+        ReactDOM.createPortal(
+          <div
+            ref={menuRef}
+            className="admin-status-dropdown__menu"
+            style={{
+              position: "fixed",
+              top: `${menuPosition.top}px`,
+              left: `${menuPosition.left}px`,
+              width: `${menuPosition.width}px`,
+            }}
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleSelect(opt.value)}
+                className={`admin-status-dropdown__item ${
+                  value === opt.value
+                    ? "admin-status-dropdown__item--selected"
+                    : ""
+                }`}
+              >
+                <span className="admin-status-dropdown__item-text">
+                  {opt.label}
+                </span>
+                {value === opt.value && (
+                  <span className="admin-status-dropdown__item-checkmark">✓</span>
+                )}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
