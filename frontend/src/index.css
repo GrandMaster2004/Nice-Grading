@@ -19,6 +19,19 @@
   --shadow-glow: 0 0 40px rgba(176, 255, 0, 0.3);
   --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --radius-base: 1rem;
+
+  /* Z-Index Scale */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 10;
+  --z-modal: 1000;
+  --z-header: 1000;
+  --z-footer: 1000;
+
+  /* Breakpoints (for reference in media queries) */
+  --bp-mobile: 320px;
+  --bp-tablet: 641px;
+  --bp-desktop: 1025px;
 }
 
 *,

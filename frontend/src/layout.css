@@ -405,7 +405,7 @@
     0 4px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
-  z-index: 1000;
+  z-index: var(--z-header);
   overflow: visible;
 }
 
@@ -554,7 +554,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
   padding: 1rem 1.5rem 1.5rem;
-  z-index: 999;
+  z-index: calc(var(--z-modal) - 1);
   position: relative;
   gap: 1rem;
   flex-direction: column;
@@ -636,9 +636,6 @@
 
   .ng-header__toggle {
     display: inline-flex;
-    position: relative;
-    position: relative;
-    isolation: isolate;
     position: relative;
     isolation: isolate;
   }
@@ -812,7 +809,6 @@
 }
 
 .ng-table__row--clickable:hover {
-  /* background: rgba(11, 11, 11, 0.12); */
   border: 1px solid rgba(13, 13, 13, 0.18);
   transform: translateY(-4px) translateZ(0);
   box-shadow:
@@ -820,14 +816,6 @@
     0 0 35px rgba(176, 255, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
-
-/* .ng-table__row:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.3),
-    0 0 32px rgba(176, 255, 0, 0.08),
-    inset 0 1px 0 rgba(176, 255, 0, 0.08);
-} */
 
 .ng-table__cell {
   padding: 0.85rem 1rem;
@@ -930,58 +918,47 @@
   box-shadow: none;
 }
 
-.status-badge--shipped {
-  background: #06b6d4;
-}
-
-.status-badge--completed {
-  background: #10b981;
-}
-
-.status-badge--paid {
-  background: #10b981;
-}
-
-.status-badge--unpaid {
-  background: #f59e0b;
-}
-
-.status-badge--failed {
-  background: #ef4444;
-}
+/* Status badge variants */
 .status-badge--shipped {
   background: #22c55e;
 }
+
 .status-badge--completed {
   background: var(--color-accent);
 }
+
 .status-badge--paid {
   background: var(--color-accent);
 }
+
 .status-badge--unpaid {
   background: #fb923c;
 }
+
 .status-badge--failed {
   background: #ef4444;
 }
+
 .status-badge--draft {
   background: #64748b;
 }
+
 .status-badge--submitted {
   background: #38bdf8;
 }
+
 .status-badge--in-review {
   background: #e879f9;
 }
-.status-badge--completed {
-  background: var(--color-accent);
-}
+
 .status-badge--pending {
   background: #f59e0b;
 }
+
 .status-badge--partially-paid {
   background: #fbbf24;
 }
+
 .status-badge--payment {
   color: #050505;
 }
@@ -1734,12 +1711,13 @@
     0 12px 32px rgba(0, 0, 0, 0.15),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  z-index: 10;
+  z-index: var(--z-dropdown);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 240px;
+  min-width: 100%;
   animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1953,12 +1931,13 @@
     0 12px 32px rgba(0, 0, 0, 0.15),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  z-index: 10;
+  z-index: var(--z-dropdown);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 240px;
+  min-width: 100%;
   animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -2124,8 +2103,6 @@
   cursor: not-allowed;
 }
 
-/*  */
-
 .admin-page .admin-status-select {
   background: #ffffff !important;
   color: #111111 !important;
@@ -2186,20 +2163,6 @@
     transition: none;
   }
 }
-
-/* .admin-page .admin-status-select:hover:not(:disabled),
-.admin-page .admin-filter:hover:not(:disabled) {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 2px 8px rgba(90, 96, 120, 0.12);
-  transform: none;
-} */
-
-/* .admin-page .admin-filter .ng-field__control:hover,
-.admin-page .admin-filter .ng-field__control--select:hover {
-  background: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(90, 96, 120, 0.12) !important;
-} */
 
 .admin-cell-content {
   display: flex;
@@ -3017,7 +2980,6 @@
   margin: 2.5rem auto 0;
   flex-wrap: wrap;
   grid-column: 1 / -1;
-  /* width: 100%; */
   padding-bottom: 2.5rem;
 }
 
@@ -3599,8 +3561,6 @@
   width: 280px;
   height: 480px;
   margin-top: 30%;
-  /* justify-content: center;
-  align-items: center; */
   perspective: 1200px;
   --stack-dur: 2.5s;
   --stack-delay: 0.08;
@@ -4097,7 +4057,6 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  z-index: 20;
 }
 
 .vault-filter-dropdown__button {
@@ -4168,12 +4127,13 @@
     0 12px 32px rgba(0, 0, 0, 0.15),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  z-index: 25;
+  z-index: var(--z-dropdown);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 240px;
+  min-width: 100%;
   animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
