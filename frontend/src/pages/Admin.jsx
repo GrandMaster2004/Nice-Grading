@@ -211,8 +211,9 @@ const StatusSelectDropdown = ({
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef(null);
 
-  useEffect(() => {
-    if (isThisOpen && dropdownRef.current && menuRef.current) {
+  // Function to update menu position
+  const updateMenuPosition = useCallback(() => {
+    if (isThisOpen && dropdownRef.current) {
       const buttonRect = dropdownRef.current.getBoundingClientRect();
       setMenuPosition({
         top: buttonRect.bottom + 8,
@@ -221,6 +222,27 @@ const StatusSelectDropdown = ({
       });
     }
   }, [isThisOpen]);
+
+  useEffect(() => {
+    updateMenuPosition();
+  }, [isThisOpen, updateMenuPosition]);
+
+  // Update position on scroll and resize
+  useEffect(() => {
+    if (!isThisOpen) return;
+
+    const handleScroll = () => updateMenuPosition();
+    const handleResize = () => updateMenuPosition();
+
+    // Use capture phase to catch scroll events from all elements
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [isThisOpen, updateMenuPosition]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
