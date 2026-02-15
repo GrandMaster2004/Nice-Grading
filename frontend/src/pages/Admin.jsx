@@ -208,10 +208,10 @@ const StatusSelectDropdown = ({
     }
   };
 
-  const [menuPosition, setMenuPosition] = React.useState({ top: 0, left: 0 });
-  const menuRef = React.useRef(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const menuRef = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isThisOpen && dropdownRef.current && menuRef.current) {
       const buttonRect = dropdownRef.current.getBoundingClientRect();
       setMenuPosition({
@@ -222,7 +222,7 @@ const StatusSelectDropdown = ({
     }
   }, [isThisOpen]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target) && menuRef.current && !menuRef.current.contains(e.target)) {
         setOpenDropdown(null);
