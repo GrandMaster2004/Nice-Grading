@@ -2,6 +2,12 @@
   --layout-max-width: 1200px;
 }
 
+body {
+  overflow-x: hidden;
+  width: 100vw;
+  max-width: 100%;
+}
+
 .ng-app-shell {
   min-height: 100vh;
   width: 100%;
@@ -316,6 +322,10 @@
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+}
+
+.admin-page .ng-section {
+  overflow: visible;
 }
 
 @media (max-width: 768px) {
@@ -717,6 +727,8 @@
   padding: 0 0.5rem;
   position: relative;
   z-index: 1;
+  /* Ensure dropdown renders above horizontal scrollbar */
+  isolation: auto;
 }
 
 @media (max-width: 640px) {
@@ -795,7 +807,8 @@
 
 /* When a dropdown is open in this row, raise its z-index */
 .ng-table__row--dropdown-open {
-  z-index: 50;
+  z-index: 500;
+  position: relative;
 }
 
 /* Clickable row with glass hover effect */
@@ -856,10 +869,11 @@
 
 /* Table cell with status dropdown - allow overflow */
 .ng-table__cell:has(.admin-status-dropdown) {
-  overflow: visible;
-  max-width: auto;
+  overflow: visible !important;
+  max-width: none !important;
   position: relative;
-  /* z-index is inherited from parent row --dropdown-open class */
+  z-index: auto;
+  /* Allow dropdown to escape cell boundaries */
 }
 
 /* Status badges */
@@ -1345,6 +1359,7 @@
 /* Admin */
 .admin-page .ng-section {
   padding: 1.5rem 0;
+  overflow: visible;
 }
 
 @media (max-width: 768px) {
@@ -1856,6 +1871,8 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+  /* Establish new stacking context to allow dropdown to escape overflow:hidden parent */
+  z-index: var(--z-sticky);
 }
 
 .admin-status-dropdown__button {
@@ -1931,7 +1948,7 @@
     0 12px 32px rgba(0, 0, 0, 0.15),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  z-index: var(--z-dropdown);
+  z-index: calc(var(--z-modal) + 1);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -1941,6 +1958,8 @@
   animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  /* Ensure menu renders on top of everything including dropdowns */
+  pointer-events: auto;
 }
 
 /* When dropdown opens upward */
