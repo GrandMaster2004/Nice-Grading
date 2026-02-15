@@ -321,11 +321,7 @@ body {
   animation: fadeInUp 0.5s ease both;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
-}
-
-.admin-page .ng-section {
-  overflow: visible;
+  /* overflow removed to allow dropdowns to render above parent containers */
 }
 
 @media (max-width: 768px) {
@@ -838,6 +834,13 @@ body {
   max-width: 200px;
 }
 
+/* Reset overflow for cells containing interactive dropdowns */
+.ng-table__cell:has(.admin-status-dropdown),
+.ng-table__cell:has(.admin-filter-dropdown) {
+  overflow: visible !important;
+  max-width: none !important;
+}
+
 @media (max-width: 768px) {
   .ng-table__cell {
     padding: 0.6rem 0.75rem;
@@ -865,15 +868,6 @@ body {
 
 .ng-table__cell--numeric {
   text-align: right;
-}
-
-/* Table cell with status dropdown - allow overflow */
-.ng-table__cell:has(.admin-status-dropdown) {
-  overflow: visible !important;
-  max-width: none !important;
-  position: relative;
-  z-index: auto;
-  /* Allow dropdown to escape cell boundaries */
 }
 
 /* Status badges */
