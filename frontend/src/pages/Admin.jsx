@@ -7,6 +7,7 @@ import {
   createContext,
   useContext,
 } from "react";
+import ReactDOM from "react-dom";
 import { Button, Card, Select, LoadingSkeleton } from "../components/UI.jsx";
 import { Header, Container } from "../layouts/MainLayout.jsx";
 import { LandingFooter } from "../components/LandingChrome.jsx";
@@ -141,78 +142,95 @@ const StatusSelectDropdown = ({
   sectionRef,
 }) => {
   const dropdownRef = useRef(null);
+  const menuRef = useRef(null);
   const { openDropdown, setOpenDropdown } = useDropdownManager();
   const isThisOpen = openDropdown === id;
-  const [shouldOpenUp, setShouldOpenUp] = useState(false);
+  const [menuStyle, setMenuStyle] = useState({});
 
   const selectedOption = options.find((opt) => opt.value === value);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpenDropdown(null);
-        onOpenChange?.(false);
-        setShouldOpenUp(false);
-      }
-    };
-
-    if (isThisOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }
-  }, [isThisOpen, setOpenDropdown, onOpenChange]);
-
-  // Detect available space and determine if dropdown should open upward
+  // Calculate fixed position once when menu opens
   useEffect(() => {
     if (isThisOpen && dropdownRef.current) {
-      const checkSpace = () => {
-        const buttonElement = dropdownRef.current?.querySelector(
-          ".admin-status-dropdown__button",
-        );
-        const sectionRect = sectionRef?.current?.getBoundingClientRect();
-        const fallbackRect = dropdownRef.current?.getBoundingClientRect();
-        const bounds = sectionRect || fallbackRect;
+      const buttonEl = dropdownRef.current.querySelector(
+        ".admin-status-dropdown__button",
+      );
+      if (buttonEl) {
+        const rect = buttonEl.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const openUp = spaceBelow < 260 && rect.top > 260;
 
-        if (buttonElement && bounds) {
-          const rect = buttonElement.getBoundingClientRect();
-          const spaceBelow = bounds.bottom - rect.bottom;
-          const spaceAbove = rect.top - bounds.top;
-          // If space below < 260px AND space above > 260px, open upward
-          // Otherwise open downward
-          setShouldOpenUp(spaceBelow < 260 && spaceAbove > 260);
-        }
-      };
-      // Small delay to allow dropdown to render
-      setTimeout(checkSpace, 0);
+        setMenuStyle({
+          position: "fixed",
+          left: `${rect.left}px`,
+          width: `${rect.width}px`,
+          ...(openUp
+            ? { bottom: `${window.innerHeight - rect.top + 4}px` }
+            : { top: `${rect.bottom + 4}px` }),
+        });
+      }
     }
-  }, [isThisOpen, sectionRef]);
+  }, [isThisOpen]);
+
+  // Close on any scroll or resize (instead of trying to track position)
+  useEffect(() => {
+    if (!isThisOpen) return;
+
+    const close = () => {
+      setOpenDropdown(null);
+      onOpenChange?.(false);
+    };
+
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [isThisOpen, setOpenDropdown, onOpenChange]);
 
   const handleSelect = (optionValue) => {
     onChange({ target: { value: optionValue } });
     setOpenDropdown(null);
     onOpenChange?.(false);
-    setShouldOpenUp(false);
   };
 
   const handleToggle = () => {
     if (isThisOpen) {
       setOpenDropdown(null);
       onOpenChange?.(false);
-      setShouldOpenUp(false);
     } else {
       setOpenDropdown(id);
       onOpenChange?.(true);
     }
   };
 
+  // Click outside handler - checks both trigger and portal menu
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        menuRef.current &&
+        !menuRef.current.contains(e.target)
+      ) {
+        setOpenDropdown(null);
+        onOpenChange?.(false);
+      }
+    };
+
+    if (isThisOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isThisOpen, onOpenChange, setOpenDropdown]);
+
   return (
     <div
       ref={dropdownRef}
       className={`admin-status-dropdown ${
         disabled ? "admin-status-dropdown--disabled" : ""
-      } ${shouldOpenUp ? "admin-status-dropdown--open-up" : ""}`}
+      }`}
     >
       <button
         type="button"
@@ -232,29 +250,38 @@ const StatusSelectDropdown = ({
         </span>
       </button>
 
-      {isThisOpen && (
-        <div className="admin-status-dropdown__menu">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => handleSelect(opt.value)}
-              className={`admin-status-dropdown__item ${
-                value === opt.value
-                  ? "admin-status-dropdown__item--selected"
-                  : ""
-              }`}
-            >
-              <span className="admin-status-dropdown__item-text">
-                {opt.label}
-              </span>
-              {value === opt.value && (
-                <span className="admin-status-dropdown__item-checkmark">✓</span>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+      {isThisOpen &&
+        typeof document !== "undefined" &&
+        ReactDOM.createPortal(
+          <div
+            ref={menuRef}
+            className="admin-status-dropdown__menu"
+            style={menuStyle}
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleSelect(opt.value)}
+                className={`admin-status-dropdown__item ${
+                  value === opt.value
+                    ? "admin-status-dropdown__item--selected"
+                    : ""
+                }`}
+              >
+                <span className="admin-status-dropdown__item-text">
+                  {opt.label}
+                </span>
+                {value === opt.value && (
+                  <span className="admin-status-dropdown__item-checkmark">
+                    ✓
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

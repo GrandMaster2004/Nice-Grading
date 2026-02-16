@@ -20,6 +20,7 @@ app.use(helmet());
 const allowedOrigins = [
   "http://localhost:5173",
   "https://nice-grading.vercel.app",
+  "https://vm-rruwv5imouzvf4bwun0o7o.vusercontent.net",
 ];
 
 app.use(

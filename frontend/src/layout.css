@@ -1,3 +1,38 @@
+/* =========================================
+   GLOBAL RESETS – added for responsiveness
+   ========================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--font-base, sans-serif);
+  background: var(--color-dark, #0a0e1a);
+  color: #fff;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* =========================================
+   YOUR EXISTING CSS (exactly as provided)
+   ========================================= */
 :root {
   --layout-max-width: 1200px;
 }
@@ -120,15 +155,35 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s ease;
 }
 
-.dashboard-page .ng-card:hover,
-.admin-page .ng-card:hover {
-  box-shadow:
-    0 16px 36px rgba(90, 96, 120, 0.2),
-    0 0 22px rgba(255, 255, 255, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  border-color: rgba(255, 255, 255, 0.6);
+/* Premium hover effect - desktop only */
+@media (hover: hover) and (min-width: 769px) {
+  .dashboard-page .ng-card:hover,
+  .admin-page .ng-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow:
+      0 20px 44px rgba(90, 96, 120, 0.22),
+      0 0 28px rgba(255, 255, 255, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.65);
+  }
+}
+
+/* Disable hover transform on touch devices */
+@media (hover: none) {
+  .dashboard-page .ng-card:hover,
+  .admin-page .ng-card:hover {
+    transform: none;
+    box-shadow:
+      0 10px 28px rgba(90, 96, 120, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
 }
 
 .admin-page .admin-panel h2,
@@ -315,7 +370,7 @@
   animation: fadeInUp 0.5s ease both;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  /* overflow removed to allow dropdowns to render above parent containers */
 }
 
 @media (max-width: 768px) {
@@ -405,7 +460,7 @@
     0 4px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
-  z-index: 1000;
+  z-index: var(--z-header);
   overflow: visible;
 }
 
@@ -554,7 +609,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
   padding: 1rem 1.5rem 1.5rem;
-  z-index: 999;
+  z-index: calc(var(--z-modal) - 1);
   position: relative;
   gap: 1rem;
   flex-direction: column;
@@ -637,9 +692,6 @@
   .ng-header__toggle {
     display: inline-flex;
     position: relative;
-    position: relative;
-    isolation: isolate;
-    position: relative;
     isolation: isolate;
   }
 
@@ -720,6 +772,8 @@
   padding: 0 0.5rem;
   position: relative;
   z-index: 1;
+  /* Ensure dropdown renders above horizontal scrollbar */
+  isolation: auto;
 }
 
 @media (max-width: 640px) {
@@ -798,7 +852,8 @@
 
 /* When a dropdown is open in this row, raise its z-index */
 .ng-table__row--dropdown-open {
-  z-index: 50;
+  z-index: 500;
+  position: relative;
 }
 
 /* Clickable row with glass hover effect */
@@ -812,7 +867,6 @@
 }
 
 .ng-table__row--clickable:hover {
-  /* background: rgba(11, 11, 11, 0.12); */
   border: 1px solid rgba(13, 13, 13, 0.18);
   transform: translateY(-4px) translateZ(0);
   box-shadow:
@@ -821,20 +875,19 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
-/* .ng-table__row:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.3),
-    0 0 32px rgba(176, 255, 0, 0.08),
-    inset 0 1px 0 rgba(176, 255, 0, 0.08);
-} */
-
 .ng-table__cell {
   padding: 0.85rem 1rem;
   font-size: 0.95rem;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
+}
+
+/* Reset overflow for cells containing interactive dropdowns */
+.ng-table__cell:has(.admin-status-dropdown),
+.ng-table__cell:has(.admin-filter-dropdown) {
+  overflow: visible !important;
+  max-width: none !important;
 }
 
 @media (max-width: 768px) {
@@ -864,14 +917,6 @@
 
 .ng-table__cell--numeric {
   text-align: right;
-}
-
-/* Table cell with status dropdown - allow overflow */
-.ng-table__cell:has(.admin-status-dropdown) {
-  overflow: visible;
-  max-width: auto;
-  position: relative;
-  /* z-index is inherited from parent row --dropdown-open class */
 }
 
 /* Status badges */
@@ -930,58 +975,47 @@
   box-shadow: none;
 }
 
-.status-badge--shipped {
-  background: #06b6d4;
-}
-
-.status-badge--completed {
-  background: #10b981;
-}
-
-.status-badge--paid {
-  background: #10b981;
-}
-
-.status-badge--unpaid {
-  background: #f59e0b;
-}
-
-.status-badge--failed {
-  background: #ef4444;
-}
+/* Status badge variants */
 .status-badge--shipped {
   background: #22c55e;
 }
+
 .status-badge--completed {
   background: var(--color-accent);
 }
+
 .status-badge--paid {
   background: var(--color-accent);
 }
+
 .status-badge--unpaid {
   background: #fb923c;
 }
+
 .status-badge--failed {
   background: #ef4444;
 }
+
 .status-badge--draft {
   background: #64748b;
 }
+
 .status-badge--submitted {
   background: #38bdf8;
 }
+
 .status-badge--in-review {
   background: #e879f9;
 }
-.status-badge--completed {
-  background: var(--color-accent);
-}
+
 .status-badge--pending {
   background: #f59e0b;
 }
+
 .status-badge--partially-paid {
   background: #fbbf24;
 }
+
 .status-badge--payment {
   color: #050505;
 }
@@ -1368,6 +1402,7 @@
 /* Admin */
 .admin-page .ng-section {
   padding: 1.5rem 0;
+  overflow: visible;
 }
 
 @media (max-width: 768px) {
@@ -1502,14 +1537,15 @@
 
 .admin-panel__content {
   height: auto;
-  overflow-y: visible;
-  overflow-x: visible;
+  overflow: visible;
 }
 
 .admin-panel .ng-table-wrapper {
   height: auto;
   max-height: none;
-  overflow-y: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-panel h2 {
@@ -1734,12 +1770,13 @@
     0 12px 32px rgba(0, 0, 0, 0.15),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  z-index: 10;
+  z-index: var(--z-dropdown);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 240px;
+  min-width: 100%;
   animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1878,6 +1915,8 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+  /* Establish new stacking context to allow dropdown to escape overflow:hidden parent */
+  z-index: var(--z-sticky);
 }
 
 .admin-status-dropdown__button {
@@ -1942,10 +1981,7 @@
 }
 
 .admin-status-dropdown__menu {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
-  right: 0;
+  /* position set inline via JS (fixed) */
   background: rgba(255, 255, 255, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 1rem;
@@ -1953,7 +1989,7 @@
     0 12px 32px rgba(0, 0, 0, 0.15),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  z-index: 10;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -1964,7 +2000,7 @@
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* When dropdown opens upward */
+/* Legacy open-up class - direction now handled by inline styles */
 .admin-status-dropdown--open-up .admin-status-dropdown__menu {
   top: auto;
   bottom: calc(100% + 0.5rem);
@@ -2124,8 +2160,6 @@
   cursor: not-allowed;
 }
 
-/*  */
-
 .admin-page .admin-status-select {
   background: #ffffff !important;
   color: #111111 !important;
@@ -2186,20 +2220,6 @@
     transition: none;
   }
 }
-
-/* .admin-page .admin-status-select:hover:not(:disabled),
-.admin-page .admin-filter:hover:not(:disabled) {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 2px 8px rgba(90, 96, 120, 0.12);
-  transform: none;
-} */
-
-/* .admin-page .admin-filter .ng-field__control:hover,
-.admin-page .admin-filter .ng-field__control--select:hover {
-  background: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(90, 96, 120, 0.12) !important;
-} */
 
 .admin-cell-content {
   display: flex;
@@ -3017,7 +3037,6 @@
   margin: 2.5rem auto 0;
   flex-wrap: wrap;
   grid-column: 1 / -1;
-  /* width: 100%; */
   padding-bottom: 2.5rem;
 }
 
@@ -3432,10 +3451,10 @@
 /* Auth */
 .auth-section {
   width: 100%;
-  min-height: 100vh;
-  height: 100svh;
+  flex: 1;
+  min-height: 0;
   background-image:
-    linear-gradient(rgba(5, 5, 5, 0.7), rgba(5, 5, 5, 0.7)), url("/bg.jpeg");
+    linear-gradient(rgba(5, 5, 5, 0.65), rgba(5, 5, 5, 0.7)), url("/bg.jpeg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -3443,31 +3462,41 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem clamp(1rem, 4vw, 2rem);
-}
-
-@supports (height: 100dvh) {
-  .auth-section {
-    height: 100dvh;
-  }
+  padding: 2rem clamp(1rem, 4vw, 2rem);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .auth-card {
-  width: min(420px, 100%);
-  background: rgba(17, 24, 39, 0.5);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  width: min(420px, 95%);
+  background: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-base);
   padding: 2.5rem;
   box-shadow:
     0 12px 48px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(176, 255, 0, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  margin: auto;
 }
 
 @media (max-width: 480px) {
+  .auth-section {
+    padding: 1.5rem 0.75rem;
+  }
+
   .auth-card {
-    padding: 2rem 1.5rem;
+    width: 95%;
+    padding: 1.75rem 1.25rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .auth-card {
+    width: 98%;
+    padding: 1.5rem 1rem;
   }
 }
 
@@ -3599,8 +3628,6 @@
   width: 280px;
   height: 480px;
   margin-top: 30%;
-  /* justify-content: center;
-  align-items: center; */
   perspective: 1200px;
   --stack-dur: 2.5s;
   --stack-delay: 0.08;
@@ -4097,7 +4124,6 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  z-index: 20;
 }
 
 .vault-filter-dropdown__button {
@@ -4168,12 +4194,13 @@
     0 12px 32px rgba(0, 0, 0, 0.15),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  z-index: 25;
+  z-index: var(--z-dropdown);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 240px;
+  min-width: 100%;
   animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -4265,4 +4292,267 @@
 /* Auth + Payment helper */
 .ng-button--block {
   width: 100%;
+}
+
+/* custom media query */
+@media (max-width: 1475px) {
+  .landing__ticket-title {
+    font-size: clamp(15px, 1.2vw + 0.5rem, 20px);
+    line-height: 1.6;
+  }
+}
+
+/* =========================================
+   NEW RESPONSIVE ADDITIONS FOR LANDING PAGE
+   (adds fluid typography, equal-height cards,
+    responsive grids, and prevents overflow)
+   ========================================= */
+
+/* ---------- Global refinements ---------- */
+.ng-page-title {
+  font-size: clamp(
+    2rem,
+    6vw,
+    3.5rem
+  ) !important; /* overrides previous clamp for consistency */
+}
+
+.ng-section {
+  padding: clamp(2rem, 5vw, 4rem) 0 !important;
+}
+
+.ng-layout-container {
+  padding: 0 clamp(1rem, 4vw, 2rem) !important;
+}
+
+/* ---------- Hero Section ---------- */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(2rem, 6vw, 5rem) 0;
+}
+
+.hero__title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  text-shadow: inherit;
+}
+
+.hero__subtitle {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.hero__cta {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .hero__cta {
+    flex-direction: column;
+    width: 100%;
+  }
+  .hero__cta .ng-button {
+    width: 100%;
+  }
+}
+
+.hero__bg {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* ---------- Choose Your Energy Section ---------- */
+.energy-section {
+  padding: clamp(2rem, 5vw, 4rem) 0;
+}
+
+.energy-section__title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  text-align: center;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+/* Fully fluid grid – no breakpoints needed */
+.energy-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+/* Energy card – equal height using flex column */
+.energy-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.3s ease;
+}
+
+.energy-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-accent);
+}
+
+.energy-card__title {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  margin-bottom: 0.5rem;
+  color: var(--color-accent);
+}
+
+.energy-card__price {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0.5rem 0;
+}
+
+.energy-card__description {
+  flex: 1; /* pushes button to bottom */
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.energy-card__button {
+  align-self: flex-start;
+}
+
+@media (max-width: 480px) {
+  .energy-card__button {
+    width: 100%;
+    text-align: center;
+  }
+  .energy-card__decor {
+    display: none; /* hide decorative elements on very small screens */
+  }
+}
+
+/* ---------- Join The Circle Section ---------- */
+.circle-section {
+  padding: clamp(2rem, 5vw, 4rem) 0;
+}
+
+.circle-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .circle-container {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.circle-content {
+  flex: 1;
+}
+
+.circle-content__title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.circle-content__text {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  margin-bottom: 2rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.circle-content__cta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .circle-content__cta {
+    flex-direction: column;
+  }
+  .circle-content__cta .ng-button {
+    width: 100%;
+  }
+}
+
+.circle-media {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-media img,
+.circle-media svg {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Hide secondary decorative images on mobile */
+@media (max-width: 480px) {
+  .circle-media .decorative-secondary {
+    display: none;
+  }
+}
+
+/* ---------- Utility Classes ---------- */
+.hide-on-mobile {
+  display: none;
+}
+@media (min-width: 768px) {
+  .hide-on-mobile {
+    display: block;
+  }
+}
+
+.show-on-mobile {
+  display: block;
+}
+@media (min-width: 768px) {
+  .show-on-mobile {
+    display: none;
+  }
+}
+
+/* ---------- Button improvements for very small screens ---------- */
+.ng-button {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 3vw, 2rem);
+  white-space: nowrap;
+}
+@media (max-width: 380px) {
+  .ng-button {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+/* ---------- Safety override for any remaining fixed heights ---------- */
+.hero,
+.energy-section,
+.circle-section,
+.ng-section,
+.dashboard-panel,
+.admin-panel,
+.submission-panel,
+.add-cards__panel,
+.review-summary,
+.payment-card {
+  min-height: auto !important;
+  height: auto;
 }

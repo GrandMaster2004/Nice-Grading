@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const TicketCard = ({ color, children, className = "" }) => {
@@ -213,7 +213,7 @@ export const LandingPage = () => {
                     </p>
                     <div className="landing__ticket-main-text">
                       <h3 className="landing__ticket-title">MAIN</h3>
-                      <h3 className="landing__ticket-title">CHARACTER</h3>
+                      <h3 className="landing__ticket-title">CARD</h3>
                       <p className="landing__ticket-price">$40 / CARD</p>
                     </div>
                     <div
@@ -244,7 +244,7 @@ export const LandingPage = () => {
                       fastest service.
                     </p>
                     <div className="landing__ticket-main-text">
-                      <h3 className="landing__ticket-title">GOAT STATUS</h3>
+                      <h3 className="landing__ticket-title">GOAT CARD</h3>
                       <p className="landing__ticket-price">$80 / CARD</p>
                     </div>
                     <div
@@ -371,7 +371,9 @@ export const LandingPage = () => {
 
       <div className="landing__join">
         <div className="landing__join-header">
-          <h2 className="landing__join-title">JOIN THE CIRCLE.</h2>
+          <div className="landing__join-header-content">
+            <h2 className="landing__join-title">JOIN THE CIRCLE.</h2>
+          </div>
         </div>
 
         <div className="landing__join-inner">

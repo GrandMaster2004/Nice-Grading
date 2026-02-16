@@ -478,13 +478,17 @@ input[type="password"]::-webkit-password-reveal-icon {
   display: flex;
   flex-direction: column;
   width: 100%;
+  flex: 1;
 }
 
 .landing__page-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   animation: fadeInUp 0.4s ease both;
   background: var(--color-dark);
   width: 100%;
+  min-height: 0;
 }
 
 .landing__hero {
@@ -759,10 +763,27 @@ input[type="password"]::-webkit-password-reveal-icon {
   text-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
+@media (max-width: 960px) {
+  .landing__hero-title {
+    /* margin-top: 30%; */
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1;
+  }
+  .landing__hero-copy{
+    margin-top: 8rem;
+  }
+  .landing__hero-text{
+    z-index: 20;
+  }
+}
+
 @media (max-width: 640px) {
+  .landing__hero-copy{
+    margin-top: 1rem;
+  }
   .landing__hero-title {
     font-size: clamp(1.75rem, 4vw, 2.5rem);
-    margin-top: 10px;
+    margin-top: 10px !important;
   }
 }
 
@@ -1046,7 +1067,7 @@ input[type="password"]::-webkit-password-reveal-icon {
   }
 
   .landing__ticket-meta {
-    flex-direction: column;
+    /* flex-direction: column; */
     align-items: flex-start;
     gap: 0.75rem;
   }
@@ -1481,6 +1502,42 @@ input[type="password"]::-webkit-password-reveal-icon {
   margin-bottom: 3rem;
 }
 
+.landing__join-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 0 clamp(1rem, 4vw, 3rem);
+}
+
+@media (max-width: 767px) {
+  .landing__join-header-content {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+.landing__join-header-image {
+  width: clamp(120px, 18vw, 220px);
+  height: auto;
+  border-radius: 1rem;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+  animation: joinImageFadeIn 0.8s ease-out both;
+  animation-delay: 0.2s;
+}
+
+@keyframes joinImageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .landing__join-title {
   font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 2.5em);
@@ -1499,7 +1556,7 @@ input[type="password"]::-webkit-password-reveal-icon {
   gap: 0.1rem;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1084px) {
   .landing__join-inner {
     margin: 0 auto;
     padding: 0 1.5rem;
@@ -1532,7 +1589,7 @@ input[type="password"]::-webkit-password-reveal-icon {
 
 .landing__join-vertical-text {
   position: absolute;
-  bottom: -60%;
+  bottom: -43%;
   display: none;
   flex-direction: row;
   align-items: flex-end; /* Align the text lines to the bottom of their container */
@@ -1551,12 +1608,18 @@ input[type="password"]::-webkit-password-reveal-icon {
     display: flex;
   }
 }
+@media (max-width: 1238px) {
+  .landing__join-vertical-text {
+    display: none;
+  }
+}
 
 .landing__vertical-text-line {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   font-family: var(--font-display);
-  font-size: 3.5rem;
+  font-size: clamp(1rem, 0.5rem + 2vw, 3rem);
+
   font-weight: 900;
   color: var(--color-white);
   letter-spacing: 0.05em;
@@ -1584,9 +1647,24 @@ input[type="password"]::-webkit-password-reveal-icon {
   flex: 1;
   margin-left: 50px;
 }
+@media (max-width: 1084px) {
+  .landing__join-pricing {
+    margin-left: 0; /* Remove left offset */
+    align-items: center; /* Center content inside */
+    text-align: center; /* Center text */
+    width: 100%;
+  }
+
+  .landing__join-cta {
+    align-self: center;
+    /* Center button */
+    margin: 0 auto;
+  }
+}
 
 .landing__join-label {
-  font-size: 2rem;
+  max-width: 60%;
+  font-size: clamp(1.2rem, 2vw, 2rem); /* ✅ Dynamic size */
   font-weight: 300;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1635,7 +1713,8 @@ input[type="password"]::-webkit-password-reveal-icon {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-size: 1rem;
+
+  font-size: clamp(0.85rem, 1.2vw, 1rem); /* ✅ Dynamic size */
   line-height: 1.4;
 }
 
@@ -1650,8 +1729,13 @@ input[type="password"]::-webkit-password-reveal-icon {
   border-radius: 0.5rem;
   background: #b0ff00;
   color: #000000;
-  padding: 1.1rem 2.5rem;
-  font-size: 1rem;
+
+  /* ✅ Responsive padding */
+  padding: clamp(0.8rem, 1.2vw, 1.1rem) clamp(1.5rem, 3vw, 2.5rem);
+
+  /* ✅ Responsive font size */
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+
   font-weight: 900;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -1675,9 +1759,44 @@ input[type="password"]::-webkit-password-reveal-icon {
   margin-left: -140px;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1084px) {
   .landing__join-right {
     margin-left: 0;
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+  }
+
+  .landing__join-gallery {
+    width: 100%;
+    align-items: center;
+    padding-right: 0;
+  }
+
+  .landing__join-gallery-grid {
+    justify-content: center; /* Center grid items */
+  }
+}
+@media (max-width: 1084px) {
+  /* Center the title */
+  .landing__join-gallery-title {
+    text-align: center;
+    width: 100%;
+    padding-right: 0;
+  }
+
+  /* Highlight text inherits centering automatically */
+  .landing__join-gallery-highlight {
+    display: inline; /* keep normal flow */
+  }
+
+  /* Center the grid properly */
+  .landing__join-gallery-grid {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -1688,11 +1807,17 @@ input[type="password"]::-webkit-password-reveal-icon {
   padding-right: 8rem;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1084px) {
   .landing__join-gallery {
-    padding-right: 0;
+    padding-right: 0;      /* remove right push */
+    padding-left: 0;       /* ensure symmetry */
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
+
 
 .landing__join-gallery-title {
   font-family: var(--font-display);
