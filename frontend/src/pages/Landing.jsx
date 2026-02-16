@@ -49,22 +49,22 @@ const TicketCard = ({ color, children, className = "" }) => {
 };
 
 const hallOfFlex = [
-  { user: "MS1_1500" },
-  { user: "MYD9ALLAS" },
-  { user: "WYERAILLAB" },
-  { user: "MYRSAILLAR" },
-  { user: "T6SMLLAS" },
-  { user: "TGRAULAS" },
-  { user: "TRBLAAS" },
-  { user: "WTERALLLAD" },
+  { user: "MS1_1500", img: "./public/image/flex1.png" },
+  { user: "MYD9ALLAS", img: "./public/image/flex3.png" },
+  { user: "WYERAILLAB", img: "./public/image/flex5.png" },
+  { user: "MYRSAILLAR", img: "./public/image/flex6.png" },
+  { user: "T6SMLLAS", img: "./public/image/flex8.png" },
+  { user: "TGRAULAS", img: "./public/image/flex7.png" },
+  { user: "TRBLAAS", img: "./public/image/flex4.png" },
+  { user: "WTERALLLAD", img: "./public/image/flex2.png" },
 ];
 
 const collageImages = [
-  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1470608756444-1343a7a555b0?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1472653431158-6364773b2a56?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80",
+  "./public/image/join1.png",
+  "./public/image/join4.jpg",
+  "./public/image/join2.png",
+  "./public/image/join3.jpg",
+  "./public/image/join6.avif",
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80",
 ];
 
@@ -81,14 +81,26 @@ export const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    if (location.state?.scrollTo) {
-      setTimeout(() => {
-        const element = document.getElementById(location.state.scrollTo);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 100);
-    }
+    if (!location.state?.scrollTo) return;
+
+    const scrollToSection = (sectionId) => {
+      const element = document.getElementById(sectionId);
+      if (!element) return;
+
+      const navbar = document.querySelector(".landing__nav");
+      const navbarHeight = navbar ? navbar.offsetHeight : 0;
+
+      const elementTop = element.getBoundingClientRect().top + window.scrollY;
+      const targetTop = elementTop - navbarHeight;
+
+      window.scrollTo({ top: targetTop, behavior: "smooth" });
+    };
+
+    const timeoutId = setTimeout(() => {
+      scrollToSection(location.state.scrollTo);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [location.state?.scrollTo]);
 
   const tickerText = useMemo(() => {
@@ -106,6 +118,19 @@ export const LandingPage = () => {
 
     return `MURDER YOUR MID COLLECTION • SLAY THE SLAB GAME • NO CAP • ACTIVATE, ${formatted}`;
   }, [tickerTime]);
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (!element) return;
+
+    const navbar = document.querySelector(".landing__nav");
+    const navbarHeight = navbar ? navbar.offsetHeight : 0;
+
+    const elementTop = element.getBoundingClientRect().top + window.scrollY;
+    const targetTop = elementTop - navbarHeight;
+
+    window.scrollTo({ top: targetTop, behavior: "smooth" });
+  };
 
   return (
     <div className="landing__page">
@@ -132,13 +157,17 @@ export const LandingPage = () => {
 
             <div className="landing__cta-group">
               <button
-                onClick={() => navigate("/dashboard")}
+                onClick={() => scrollToSection("pricing-section")}
                 className="landing__cta landing__cta--violet"
                 type="button"
               >
                 Get My Cards
               </button>
-              <button className="landing__cta landing__cta--fire" type="button">
+              <button
+                className="landing__cta landing__cta--fire"
+                type="button"
+                onClick={() => scrollToSection("process-section")}
+              >
                 Explore The Drip
               </button>
             </div>
@@ -266,7 +295,7 @@ export const LandingPage = () => {
                 </TicketCard>
               </div>
 
-              <div className="landing__process">
+              <div className="landing__process" id="process-section">
                 <h2>The Process (Real-One Edition)</h2>
                 <div className="landing__process-steps">
                   {["PACK 'EM.", "SHIP 'EM.", "GRADE 'EM", "FLEX 'EM"].map(
@@ -354,7 +383,7 @@ export const LandingPage = () => {
                 {hallOfFlex.map((item) => (
                   <div className="landing__gallery-card" key={item.user}>
                     <img
-                      src="https://mir-s3-cdn-cf.behance.net/projects/404/808cdf187184933.Y3JvcCwxNTAwLDExNzMsMCwxMDcz.jpg"
+                      src={item.img}
                       alt={`Flex by ${item.user}`}
                       referrerPolicy="no-referrer"
                     />
@@ -399,7 +428,11 @@ export const LandingPage = () => {
                   <li>• UV Protected Sonic-Welded Slabs</li>
                   <li>• Insurance that actually pays out</li>
                 </ul>
-                <button className="landing__join-cta" type="button">
+                <button
+                  className="landing__join-cta"
+                  type="button"
+                  onClick={() => scrollToSection("pricing-section")}
+                >
                   GIVE US YOUR CARDS
                 </button>
               </div>

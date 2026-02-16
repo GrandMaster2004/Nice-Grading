@@ -769,16 +769,16 @@ input[type="password"]::-webkit-password-reveal-icon {
     font-size: clamp(2rem, 5vw, 3.2rem);
     line-height: 1;
   }
-  .landing__hero-copy{
+  .landing__hero-copy {
     margin-top: 8rem;
   }
-  .landing__hero-text{
+  .landing__hero-text {
     z-index: 20;
   }
 }
 
 @media (max-width: 640px) {
-  .landing__hero-copy{
+  .landing__hero-copy {
     margin-top: 1rem;
   }
   .landing__hero-title {
@@ -1809,15 +1809,14 @@ input[type="password"]::-webkit-password-reveal-icon {
 
 @media (max-width: 1084px) {
   .landing__join-gallery {
-    padding-right: 0;      /* remove right push */
-    padding-left: 0;       /* ensure symmetry */
+    padding-right: 0; /* remove right push */
+    padding-left: 0; /* ensure symmetry */
     width: 100%;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
   }
 }
-
 
 .landing__join-gallery-title {
   font-family: var(--font-display);
@@ -1890,6 +1889,8 @@ input[type="password"]::-webkit-password-reveal-icon {
   letter-spacing: 0.3em;
   text-transform: uppercase;
   transition: color 0.2s ease;
+  pointer-events: none;
+  cursor: default;
 }
 
 .landing__join-nav-link:hover {
@@ -2032,7 +2033,7 @@ input[type="password"]::-webkit-password-reveal-icon {
   border: none;
   color: var(--color-accent);
   font-size: 1.4rem;
-  cursor: pointer;
+  /* cursor: pointer; */
 }
 
 .landing__footer p {
