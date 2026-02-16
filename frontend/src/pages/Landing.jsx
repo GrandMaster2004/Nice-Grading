@@ -49,24 +49,26 @@ const TicketCard = ({ color, children, className = "" }) => {
 };
 
 const hallOfFlex = [
-  { user: "MS1_1500", img: "./public/image/flex1.png" },
-  { user: "MYD9ALLAS", img: "./public/image/flex3.png" },
-  { user: "WYERAILLAB", img: "./public/image/flex5.png" },
-  { user: "MYRSAILLAR", img: "./public/image/flex6.png" },
-  { user: "T6SMLLAS", img: "./public/image/flex8.png" },
-  { user: "TGRAULAS", img: "./public/image/flex7.png" },
-  { user: "TRBLAAS", img: "./public/image/flex4.png" },
-  { user: "WTERALLLAD", img: "./public/image/flex2.png" },
+  { user: "MS1_1500", img: "/image/flex1.png" },
+  { user: "MYD9ALLAS", img: "/image/flex3.png" },
+  { user: "WYERAILLAB", img: "/image/flex5.png" },
+  { user: "MYRSAILLAR", img: "/image/flex6.png" },
+  { user: "T6SMLLAS", img: "/image/flex8.png" },
+  { user: "TGRAULAS", img: "/image/flex7.png" },
+  { user: "TRBLAAS", img: "/image/flex4.png" },
+  { user: "WTERALLLAD", img: "/image/flex2.png" },
 ];
 
 const collageImages = [
-  "./public/image/join1.png",
-  "./public/image/join4.jpg",
-  "./public/image/join2.png",
-  "./public/image/join3.jpg",
-  "./public/image/join6.avif",
+
+  "/image/join1.png",
+  "/image/join4.jpg",
+  "/image/join2.png",
+  "/image/join3.jpg",
+  "/image/join6.avif",
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80",
 ];
+
 
 export const LandingPage = () => {
   const location = useLocation();
