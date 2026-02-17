@@ -8,6 +8,7 @@ import {
 import { useAuth } from "./hooks/useAuth.js";
 import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 import { StackedCardsLoader } from "./components/UI.jsx";
+import { BuiltBySlashEasy } from "./components/BuiltBySlashEasy.jsx";
 import { LandingLayout } from "./layouts/LandingLayout.jsx";
 import "./index.css";
 
@@ -183,6 +184,7 @@ function App() {
           />
         </Routes>
       </Suspense>
+      <BuiltBySlashEasy />
     </Router>
   );
 }
